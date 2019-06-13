@@ -7,8 +7,7 @@ from typing import Dict, List
 from geopy import distance
 from geopy.distance import geodesic
 
-from avito.Metro import Metro
-from avito.SpbMetro import SpbMetro
+from Metro import SpbMetro
 
 
 @dataclass
@@ -58,7 +57,7 @@ class Item:
         return None
 
     @property
-    def closest_metro(self) -> Metro:
+    def closest_metro(self) -> SpbMetro:
         if not hasattr(self, '_closest_metro'):
             ClosestStation = namedtuple('ClosestStation', 'station distance')
             closest = ClosestStation(None, None)
