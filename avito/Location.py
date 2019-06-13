@@ -3,6 +3,9 @@ from enum import unique, Enum
 
 @unique
 class Location(Enum):
+    """
+    Географическая локация поиска для Avito
+    """
     ALL = (None, None)
     SAINT_PETERSBURG = (653240, 'Санкт-Петербург')
     RUSSIA = (621540, 'Россия')
