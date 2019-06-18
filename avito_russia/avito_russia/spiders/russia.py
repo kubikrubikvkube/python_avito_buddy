@@ -1,32 +1,40 @@
 # -*- coding: utf-8 -*-
 import json
+import operator
 from datetime import datetime, timedelta
+from typing import Optional
 
 import scrapy
 
 
 class RussiaSpiderHelper:
     current_link: str = None
+    processed: dict = {}
 
     @classmethod
-    def get_key(cls) -> str:
-        return 'af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir'
-
-    @staticmethod
-    def last_stamp() -> int:
-        almost_now = datetime.now() - timedelta(minutes=5)
-        timestamp: float = datetime.timestamp(almost_now)
-        return int(timestamp)
+    def add_processed(cls, id, timestamp) -> None:
+        cls.processed[id] = timestamp
 
     @classmethod
-    def next_link(cls) -> str:
-        if not cls.current_link:
-            cls.key = cls.get_key()
-            cls.last_stamp = cls.last_stamp()
-            cls.page = 0
-            cls.limit = 99
-        cls.current_link = f'https://m.avito.ru/api/9/items?key={cls.key}&sort=default&locationId=621540&page={cls.page + 1}&lastStamp={cls.last_stamp}&display=list&limit={cls.limit}'
-        return cls.current_link
+    def is_processed(cls, id) -> bool:
+        return id in cls.processed.keys()
+
+    @classmethod
+    def processed_timestamp(cls, id) -> Optional[int]:
+        return cls.processed[id]
+
+    @classmethod
+    def generate_url(cls) -> str:
+        if not cls.processed:
+            delta_timestamp = datetime.now() - timedelta(minutes=1)
+            timestamp: float = int(datetime.timestamp(delta_timestamp))
+            print(f'Initial timestamp is {timestamp}')
+            return f'https://m.avito.ru/api/9/items?key=af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir&sort=default&locationId=621540&page=1&lastStamp={timestamp}&display=list&limit=30'
+        else:
+            sorted_dict = sorted(cls.processed.items(), key=operator.itemgetter(1))
+            latest_timestamp = sorted_dict[0][1]
+            print(f'Sorted dict value 1 is {latest_timestamp}')
+            return f'https://m.avito.ru/api/9/items?key=af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir&sort=default&locationId=621540&page=1&lastStamp={latest_timestamp}&display=list&limit=30'
 
 
 class AvitoSimpleAd(scrapy.Item):
@@ -60,7 +68,7 @@ class RussiaSpider(scrapy.Spider):
 
     allowed_domains = ['m.avito.ru']
     offset = 30
-    start_urls = [RussiaSpiderHelper.next_link()]
+    start_urls = [RussiaSpiderHelper.generate_url()]
 
     def start_requests(self):
         return super().start_requests()
@@ -69,8 +77,14 @@ class RussiaSpider(scrapy.Spider):
         json_response = json.loads(response.body_as_unicode())
         items = json_response['result']['items']
         for item in items:
+            if item['type'] == 'vip' or RussiaSpiderHelper.is_processed(item['value']['id']):
+                pass
+            elif item['type'] != 'vip' and not RussiaSpiderHelper.is_processed(item['value']['id']):
+                id = item['value']['id']
+                timestamp = item['value']['time']
+                RussiaSpiderHelper.add_processed(id, timestamp)
             yield AvitoSimpleAd(item['value'])
 
-        next_page_url = RussiaSpiderHelper.next_link()
+        next_page_url = RussiaSpiderHelper.generate_url()
         if items:
             yield scrapy.Request(response.urljoin(next_page_url))
