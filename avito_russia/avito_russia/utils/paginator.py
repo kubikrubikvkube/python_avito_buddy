@@ -1,0 +1,2 @@
+class Paginator:
+    pass

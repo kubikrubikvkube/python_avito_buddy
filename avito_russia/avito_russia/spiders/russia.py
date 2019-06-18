@@ -1,32 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
-from datetime import datetime, timedelta
 
 import scrapy
-
-
-class RussiaSpiderHelper:
-    current_link: str = None
-
-    @classmethod
-    def get_key(cls) -> str:
-        return 'af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir'
-
-    @staticmethod
-    def last_stamp() -> int:
-        almost_now = datetime.now() - timedelta(minutes=5)
-        timestamp: float = datetime.timestamp(almost_now)
-        return int(timestamp)
-
-    @classmethod
-    def next_link(cls) -> str:
-        if not cls.current_link:
-            cls.key = cls.get_key()
-            cls.last_stamp = cls.last_stamp()
-            cls.page = 0
-            cls.limit = 99
-        cls.current_link = f'https://m.avito.ru/api/9/items?key={cls.key}&sort=default&locationId=621540&page={cls.page + 1}&lastStamp={cls.last_stamp}&display=list&limit={cls.limit}'
-        return cls.current_link
 
 
 class AvitoSimpleAd(scrapy.Item):
@@ -60,7 +35,7 @@ class RussiaSpider(scrapy.Spider):
 
     allowed_domains = ['m.avito.ru']
     offset = 30
-    start_urls = [RussiaSpiderHelper.next_link()]
+    start_urls = [None]
 
     def start_requests(self):
         return super().start_requests()
@@ -70,7 +45,6 @@ class RussiaSpider(scrapy.Spider):
         items = json_response['result']['items']
         for item in items:
             yield AvitoSimpleAd(item['value'])
-
-        next_page_url = RussiaSpiderHelper.next_link()
+        next_page_url = None
         if items:
             yield scrapy.Request(response.urljoin(next_page_url))
