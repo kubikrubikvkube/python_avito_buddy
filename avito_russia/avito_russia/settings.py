@@ -71,12 +71,12 @@ ROBOTSTXT_OBEY = False
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
 AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-AUTOTHROTTLE_START_DELAY = 1
+# AUTOTHROTTLE_START_DELAY = 5
 # The maximum download delay to be set in case of high latencies
-AUTOTHROTTLE_MAX_DELAY = 15
+#AUTOTHROTTLE_MAX_DELAY = 15
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = 0.1
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = True
 
