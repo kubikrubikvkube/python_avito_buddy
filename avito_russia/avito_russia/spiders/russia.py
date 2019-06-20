@@ -87,7 +87,6 @@ class RussiaSpider(scrapy.Spider):
         json_response = json.loads(response.body_as_unicode())
         items = json_response['result']['items']
         for item in items:
-            print(1)
             self.paginator.preserve(item)
             yield AvitoSimpleAd(item['value'])
 
