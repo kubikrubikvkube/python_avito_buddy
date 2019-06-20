@@ -1,28 +1,33 @@
 # -*- coding: utf-8 -*-
 import json
 from datetime import datetime, timedelta
+from json.decoder import JSONObject
 
 import scrapy
 
 
 class Paginator:
-    url_pattern = 'https://m.avito.ru/api/9/items?key=af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir&sort=date&locationId=621540&page={page}&lastStamp={timestamp}&display=list&limit=99'
+    url_pattern = 'https://m.avito.ru/api/9/items?key={key}&sort={sort}&locationId={location_id}&page=__page__&lastStamp=__timestamp__&display={display}&limit={limit}'.format(
+        key='af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir',
+        sort='date',
+        location_id='621540',
+        display='list',
+        limit=99
+    )
 
     def __init__(self) -> None:
         delta_timestamp = datetime.now() - timedelta(minutes=3)
         self.last_stamp = int(datetime.timestamp(delta_timestamp))
         self.page = 1
 
-    def preserve(self, ad_json) -> None:
+    def preserve(self, ad: JSONObject) -> None:
         timestamp = None
-        if ad_json['type'] == 'item':
-            timestamp = ad_json['value']['time']
-        elif ad_json['type'] == 'vip':
-            timestamp = ad_json['value']['list'][0]['value']['time']
+        if ad['type'] == 'item':
+            timestamp = ad['value']['time']
+        elif ad['type'] == 'vip':
+            timestamp = ad['value']['list'][0]['value']['time']
 
         if self.last_stamp == timestamp:
-            print(f'Last stamp is {self.last_stamp}')
-            print(f'Page is {self.page}')
             self.increment_page()
         else:
             self.last_stamp = timestamp
@@ -34,7 +39,7 @@ class Paginator:
     def next_url(self) -> str:
         page = str(self.page)
         last_stamp = str(self.last_stamp)
-        return self.url_pattern.replace('{page}', page).replace('{timestamp}', last_stamp)
+        return self.url_pattern.replace('__page__', page).replace('__timestamp__', last_stamp)
 
 
 class AvitoSimpleAd(scrapy.Item):
@@ -63,6 +68,7 @@ class AvitoSimpleAd(scrapy.Item):
     list = scrapy.Field()
 
 
+
 class RussiaSpider(scrapy.Spider):
     name = 'russia'
 
@@ -74,17 +80,16 @@ class RussiaSpider(scrapy.Spider):
         self.paginator = Paginator()
 
     def start_requests(self):
-        self.start_urls = []
-        self.start_urls.append(self.paginator.next_url())
+        self.start_urls = [self.paginator.next_url()]
         return super().start_requests()
 
     def parse(self, response):
-        print(response)
         json_response = json.loads(response.body_as_unicode())
         items = json_response['result']['items']
         for item in items:
+            print(1)
             self.paginator.preserve(item)
             yield AvitoSimpleAd(item['value'])
-        next_url = self.paginator.next_url()
+
         if items:
-            yield scrapy.Request(response.urljoin(next_url))
+            yield scrapy.Request(self.paginator.next_url())
