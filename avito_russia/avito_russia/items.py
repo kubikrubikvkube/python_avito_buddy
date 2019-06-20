@@ -8,7 +8,27 @@
 import scrapy
 
 
-class AvitoRussiaItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class AvitoSimpleAd(scrapy.Item):
+    type = scrapy.Field()
+    id = scrapy.Field()
+    userId = scrapy.Field()
+    category = scrapy.Field()
+    location = scrapy.Field()
+    coords = scrapy.Field()
+    time = scrapy.Field()
+    title = scrapy.Field()
+    userType = scrapy.Field()
+    images = scrapy.Field()
+    services = scrapy.Field()
+    price = scrapy.Field()
+    uri = scrapy.Field()
+    uri_mweb = scrapy.Field()
+    shop = scrapy.Field()
+    background = scrapy.Field()
+    isVerified = scrapy.Field()
+    isFavorite = scrapy.Field()
+    delivery = scrapy.Field()
+    description = scrapy.Field()
+    callAction = scrapy.Field()
+    imageList = scrapy.Field()
+    list = scrapy.Field()
