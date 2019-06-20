@@ -5,6 +5,8 @@ from json.decoder import JSONObject
 
 import scrapy
 
+from ..items import AvitoSimpleAd
+
 
 class Paginator:
     url_pattern = 'https://m.avito.ru/api/9/items?key={key}&sort={sort}&locationId={location_id}&page=__page__&lastStamp=__timestamp__&display={display}&limit={limit}'.format(
@@ -40,33 +42,6 @@ class Paginator:
         page = str(self.page)
         last_stamp = str(self.last_stamp)
         return self.url_pattern.replace('__page__', page).replace('__timestamp__', last_stamp)
-
-
-class AvitoSimpleAd(scrapy.Item):
-    type = scrapy.Field()
-    id = scrapy.Field()
-    userId = scrapy.Field()
-    category = scrapy.Field()
-    location = scrapy.Field()
-    coords = scrapy.Field()
-    time = scrapy.Field()
-    title = scrapy.Field()
-    userType = scrapy.Field()
-    images = scrapy.Field()
-    services = scrapy.Field()
-    price = scrapy.Field()
-    uri = scrapy.Field()
-    uri_mweb = scrapy.Field()
-    shop = scrapy.Field()
-    background = scrapy.Field()
-    isVerified = scrapy.Field()
-    isFavorite = scrapy.Field()
-    delivery = scrapy.Field()
-    description = scrapy.Field()
-    callAction = scrapy.Field()
-    imageList = scrapy.Field()
-    list = scrapy.Field()
-
 
 
 class RussiaSpider(scrapy.Spider):
