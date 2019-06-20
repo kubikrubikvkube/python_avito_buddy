@@ -12,29 +12,24 @@ class Paginator:
         delta_timestamp = datetime.now() - timedelta(minutes=3)
         self.last_stamp = int(datetime.timestamp(delta_timestamp))
         self.page = 1
-        self.uris = []
 
     def preserve(self, ad_json) -> None:
-        uri = None
         timestamp = None
         if ad_json['type'] == 'item':
-            uri = ad_json['value']['uri']
             timestamp = ad_json['value']['time']
         elif ad_json['type'] == 'vip':
-            uri = ad_json['value']['list'][0]['value']['uri']
             timestamp = ad_json['value']['list'][0]['value']['time']
 
-        if uri in self.uris:
+        if self.last_stamp == timestamp:
             print(f'Last stamp is {self.last_stamp}')
-            self.last_stamp = timestamp
             print(f'Page is {self.page}')
-            self.page = 0
+            self.increment_page()
         else:
-            print('Not in self.uris')
-            print(f'Appending uri {uri}')
-            self.uris.append(uri)
-            self.page += 1
-            print(f'Page is {self.page}')
+            self.last_stamp = timestamp
+            self.page = 1
+
+    def increment_page(self) -> None:
+        self.page += 1
 
     def next_url(self) -> str:
         page = str(self.page)
