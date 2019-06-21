@@ -30,13 +30,10 @@ class Paginator:
             timestamp = ad['value']['list'][0]['value']['time']
 
         if self.last_stamp == timestamp:
-            self.increment_page()
+            self.page += 1
         else:
             self.last_stamp = timestamp
             self.page = 1
-
-    def increment_page(self) -> None:
-        self.page += 1
 
     def next_url(self) -> str:
         page = str(self.page)

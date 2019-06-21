@@ -74,7 +74,7 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'avito_russia.pipelines.AvitoRussiaPipeline': 300,
+    'avito_russia.pipelines.SQLiteSavingPipeline': 0,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
