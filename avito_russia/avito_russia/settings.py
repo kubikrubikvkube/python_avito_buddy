@@ -15,7 +15,7 @@ SPIDER_MODULES = ['avito_russia.spiders']
 NEWSPIDER_MODULE = 'avito_russia.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-# USER_AGENT = 'avito_russia (+http://www.yourdomain.com)'
+USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/12.0 Mobile/15A372 Safari/604.1'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -42,6 +42,16 @@ ROBOTSTXT_OBEY = False
 #   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 #   'Accept-Language': 'en',
 # }
+DEFAULT_REQUEST_HEADERS = {
+   'Host': 'm.avito.ru',
+   'Accept': 'application/json, text/plain, */*',
+   'Accept-Language': 'en-US,en;q=0.5',
+   'Accept-Encoding': 'gzip, deflate, br',
+   'Referer': 'https://m.avito.ru',
+   'Content-Type': 'application/json;charset=utf-8',
+   'Connection': 'keep-alive',
+   'TE': 'Trailers'
+}
 
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
@@ -93,3 +103,12 @@ DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
 
 # We want our exported data to be encoded in UTF-8
 FEED_EXPORT_ENCODING = 'utf-8'
+
+# Into log file
+# LOG_FILE = 'avito_russia.log'
+
+# We want redirect all stdout output to log file
+LOG_STDOUT = True
+
+# Enable memory debugging
+MEMDEBUG_ENABLED = True
