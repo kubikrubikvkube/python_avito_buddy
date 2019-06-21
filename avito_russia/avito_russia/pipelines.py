@@ -16,11 +16,11 @@ class SQLiteSavingPipeline(object):
 
     def process_item(self, ad: AvitoSimpleAd, spider):
         cursor = self.connection.cursor()
-        id = ad['id'] if 'id' in ad else None
+        id = int(ad['id']) if 'id' in ad else None
         category = str(ad['category']) if 'category' in ad else None
         location = str(ad['location']) if 'location' in ad else None
         coords = str(ad['coords']) if 'coords' in ad else None
-        time = str(ad['time']) if 'time' in ad else None
+        time = int(ad['time']) if 'time' in ad else None
         title = str(ad['title']) if 'title' in ad else None
         userType = str(ad['userType']) if 'userType' in ad else None
         images = str(ad['images']) if 'images' in ad else None
@@ -50,6 +50,8 @@ class SQLiteSavingPipeline(object):
                        ]
                        )
         self.connection.commit()
+        self.processed_items += 1
+        logger.info('Processed %s items', self.processed_items)
         return ad
 
     def open_spider(self, spider):
@@ -61,7 +63,7 @@ class SQLiteSavingPipeline(object):
                              category text,
                              location text,
                              coords text,
-                             time text,
+                             time integer,
                              title text,
                              userType text,
                              images text,
@@ -71,6 +73,7 @@ class SQLiteSavingPipeline(object):
                              uri_mweb text,
                              isVerified text,
                              isFavorite text)''')
+        self.processed_items = 0
 
 
 
