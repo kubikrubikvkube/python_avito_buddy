@@ -88,7 +88,7 @@ AUTOTHROTTLE_ENABLED = True
 # each remote server
 AUTOTHROTTLE_TARGET_CONCURRENCY = 1
 # Enable showing throttling stats for every response received:
-AUTOTHROTTLE_DEBUG = True
+AUTOTHROTTLE_DEBUG = False
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
@@ -108,7 +108,7 @@ FEED_EXPORT_ENCODING = 'utf-8'
 # LOG_FILE = 'avito_russia.log'
 
 # We want redirect all stdout output to log file
-LOG_STDOUT = True
+LOG_STDOUT = False
 
 # Enable memory debugging
-MEMDEBUG_ENABLED = True
+MEMDEBUG_ENABLED = False

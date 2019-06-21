@@ -7,6 +7,8 @@
 import logging
 import sqlite3
 
+from scrapy.exceptions import DropItem
+
 from .items import AvitoSimpleAd
 
 logger = logging.getLogger('avito_russia.pipelines')
@@ -17,6 +19,10 @@ class SQLiteSavingPipeline(object):
     def process_item(self, ad: AvitoSimpleAd, spider):
         cursor = self.connection.cursor()
         id = int(ad['id']) if 'id' in ad else None
+
+        if id is None:
+            raise DropItem("Valid AvitoSimpleAd should have 'id' attribute")
+
         category = str(ad['category']) if 'category' in ad else None
         location = str(ad['location']) if 'location' in ad else None
         coords = str(ad['coords']) if 'coords' in ad else None
@@ -51,7 +57,7 @@ class SQLiteSavingPipeline(object):
                        )
         self.connection.commit()
         self.processed_items += 1
-        logger.info('Processed %s items', self.processed_items)
+        print('Processed %s items', self.processed_items)
         return ad
 
     def open_spider(self, spider):
