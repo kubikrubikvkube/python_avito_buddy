@@ -25,7 +25,7 @@ class SQLiteSavingPipeline(object):
         userType = str(ad['userType']) if 'userType' in ad else None
         images = str(ad['images']) if 'images' in ad else None
         services = str(ad['services']) if 'services' in ad else None
-        price = str(ad['price']) if ad['price'] in ad else None
+        price = str(ad['price']) if 'price' in ad else None
         uri = str(ad['uri']) if 'uri' in ad else None
         uri_mweb = str(ad['uri_mweb']) if 'uri_mweb' in ad else None
         isVerified = str(ad['isVerified']) if 'isVerified' in ad else None
