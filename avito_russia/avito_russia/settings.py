@@ -43,14 +43,14 @@ ROBOTSTXT_OBEY = False
 #   'Accept-Language': 'en',
 # }
 DEFAULT_REQUEST_HEADERS = {
-   'Host': 'm.avito.ru',
-   'Accept': 'application/json, text/plain, */*',
-   'Accept-Language': 'en-US,en;q=0.5',
-   'Accept-Encoding': 'gzip, deflate, br',
-   'Referer': 'https://m.avito.ru',
-   'Content-Type': 'application/json;charset=utf-8',
-   'Connection': 'keep-alive',
-   'TE': 'Trailers'
+    'Host': 'm.avito.ru',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Referer': 'https://m.avito.ru',
+    'Content-Type': 'application/json;charset=utf-8',
+    'Connection': 'keep-alive',
+    'TE': 'Trailers'
 }
 
 # Enable or disable spider middlewares
@@ -112,3 +112,17 @@ LOG_STDOUT = False
 
 # Enable memory debugging
 MEMDEBUG_ENABLED = False
+
+# For the sake of stability we need to implement request retry logic
+RETRY_ENABLED = True
+RETRY_TIMES = 100
+RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]
+RETRY_PRIORITY_ADJUST = -1
+
+# Implicitly set statistics collection class
+STATS_CLASS = 'scrapy.statscollectors.MemoryStatsCollector'
+STATS_DUMP = True
+
+# For debug purposes telnet console should be enabled
+TELNETCONSOLE_USERNAME = 'scrapy'
+TELNETCONSOLE_PASSWORD = 'scrapy'
