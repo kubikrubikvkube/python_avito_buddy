@@ -7,6 +7,8 @@
 import logging
 import sqlite3
 
+from scrapy.exceptions import DropItem
+
 from .items import AvitoSimpleAd
 
 logger = logging.getLogger('avito_russia.pipelines')
@@ -16,11 +18,17 @@ class SQLiteSavingPipeline(object):
 
     def process_item(self, ad: AvitoSimpleAd, spider):
         cursor = self.connection.cursor()
-        id = ad['id'] if 'id' in ad else None
-        category = str(ad['category']) if 'category' in ad else None
+        id = int(ad['id']) if 'id' in ad else None
+
+        if id is None:
+            raise DropItem("Valid AvitoSimpleAd should have 'id' attribute")
+
+        category_id = int(ad['category']['id']) if 'category' in ad else None
+        category_name = str(ad['category']['name']) if 'category' in ad else None
         location = str(ad['location']) if 'location' in ad else None
-        coords = str(ad['coords']) if 'coords' in ad else None
-        time = str(ad['time']) if 'time' in ad else None
+        coords_lat = float(ad['coords']['lat']) if 'coords' in ad else None
+        coords_lng = float(ad['coords']['lng']) if 'coords' in ad else None
+        time = int(ad['time']) if 'time' in ad else None
         title = str(ad['title']) if 'title' in ad else None
         userType = str(ad['userType']) if 'userType' in ad else None
         images = str(ad['images']) if 'images' in ad else None
@@ -31,12 +39,14 @@ class SQLiteSavingPipeline(object):
         isVerified = str(ad['isVerified']) if 'isVerified' in ad else None
         isFavorite = str(ad['isFavorite']) if 'isFavorite' in ad else None
 
-        cursor.execute("INSERT INTO avito_simple_ads VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        cursor.execute("INSERT INTO avito_simple_ads VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                        [
                            id,
-                           category,
+                           category_id,
+                           category_name,
                            location,
-                           coords,
+                           coords_lat,
+                           coords_lng,
                            time,
                            title,
                            userType,
@@ -50,6 +60,8 @@ class SQLiteSavingPipeline(object):
                        ]
                        )
         self.connection.commit()
+        self.processed_items += 1
+        print('Processed %s items', self.processed_items)
         return ad
 
     def open_spider(self, spider):
@@ -58,10 +70,12 @@ class SQLiteSavingPipeline(object):
         cursor = self.connection.cursor()
         cursor.execute('''CREATE TABLE IF NOT EXISTS avito_simple_ads
                              (id integer,
-                             category text,
+                             category_id integer,
+                             category_name text,
                              location text,
-                             coords text,
-                             time text,
+                             coords_lat real,
+                             coords_lng real,
+                             time integer,
                              title text,
                              userType text,
                              images text,
@@ -71,6 +85,7 @@ class SQLiteSavingPipeline(object):
                              uri_mweb text,
                              isVerified text,
                              isFavorite text)''')
+        self.processed_items = 0
 
 
 
