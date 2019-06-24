@@ -7,13 +7,12 @@ import sqlite3
 from abc import ABC, abstractmethod
 
 import psycopg2 as psycopg2
-from scrapy.exceptions import DropItem
 
 from .items import AvitoSimpleAd
 from .settings import POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DBNAME
 
 logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.INFO)
+logger.setLevel(level=logging.DEBUG)
 
 
 class SavingPipeline(ABC):
@@ -38,17 +37,15 @@ class SQLiteSavingPipeline(SavingPipeline):
     """
 
     def process_item(self, ad: AvitoSimpleAd, spider) -> AvitoSimpleAd:
+        logger.debug(f'Saving {ad} to SQLite DB')
         """
         Saving AvitoSimpleAd using SQLite database
         :param ad:
         :param spider:
         :return:
         """
-        id = int(ad['id']) if 'id' in ad else None
-
-        if id is None:
-            raise DropItem("Valid AvitoSimpleAd should have 'id' attribute")
-
+        assert ad['id'] is not None
+        id = int(ad['id'])
         category_id = int(ad['category']['id']) if 'category' in ad else None
         category_name = str(ad['category']['name']) if 'category' in ad else None
         location = str(ad['location']) if 'location' in ad else None
