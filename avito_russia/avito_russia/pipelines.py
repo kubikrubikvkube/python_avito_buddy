@@ -11,13 +11,12 @@ from scrapy.exceptions import DropItem
 
 from .items import AvitoSimpleAd
 
-logger = logging.getLogger('avito_russia.pipelines')
+logger = logging.getLogger(__name__)
 
 
-class SQLiteSavingPipeline(object):
+class SQLiteSavingPipeline:
 
     def process_item(self, ad: AvitoSimpleAd, spider):
-        cursor = self.connection.cursor()
         id = int(ad['id']) if 'id' in ad else None
 
         if id is None:
@@ -39,8 +38,8 @@ class SQLiteSavingPipeline(object):
         isVerified = str(ad['isVerified']) if 'isVerified' in ad else None
         isFavorite = str(ad['isFavorite']) if 'isFavorite' in ad else None
 
-        cursor.execute("INSERT INTO avito_simple_ads VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                       [
+        self.connection.execute("INSERT INTO avito_simple_ads VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                                [
                            id,
                            category_id,
                            category_name,
@@ -58,17 +57,17 @@ class SQLiteSavingPipeline(object):
                            isVerified,
                            isFavorite,
                        ]
-                       )
+                                )
+
         self.connection.commit()
         self.processed_items += 1
-        print('Processed %s items', self.processed_items)
+        logger.info(f'Processed {self.processed_items} items')
         return ad
 
     def open_spider(self, spider):
         logger.info("SQLiteSavingPipeline opened")
         self.connection = sqlite3.connect('avito_russia.db')
-        cursor = self.connection.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS avito_simple_ads
+        self.connection.execute('''CREATE TABLE IF NOT EXISTS avito_simple_ads
                              (id integer,
                              category_id integer,
                              category_name text,
