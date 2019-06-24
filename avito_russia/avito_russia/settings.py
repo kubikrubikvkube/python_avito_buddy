@@ -127,3 +127,8 @@ STATS_DUMP = True
 # For debug purposes telnet console should be enabled
 TELNETCONSOLE_USERNAME = 'scrapy'
 TELNETCONSOLE_PASSWORD = 'scrapy'
+
+POSTGRES_HOST = 'localhost'
+POSTGRES_USER = 'postgres'
+POSTGRES_PASSWORD = 'postgres'
+POSTGRES_DBNAME = 'avito'
