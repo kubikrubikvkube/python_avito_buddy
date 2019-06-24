@@ -75,6 +75,7 @@ DEFAULT_REQUEST_HEADERS = {
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'avito_russia.pipelines.SQLiteSavingPipeline': 0,
+    'avito_russia.pipelines.PostgreSQLSavingPipeline': 1,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -126,3 +127,8 @@ STATS_DUMP = True
 # For debug purposes telnet console should be enabled
 TELNETCONSOLE_USERNAME = 'scrapy'
 TELNETCONSOLE_PASSWORD = 'scrapy'
+
+POSTGRES_HOST = 'localhost'
+POSTGRES_USER = 'postgres'
+POSTGRES_PASSWORD = 'postgres'
+POSTGRES_DBNAME = 'avito'

@@ -23,11 +23,19 @@ class Paginator:
         self.page = 1
 
     def preserve(self, ad: JSONObject) -> None:
+        assert ad['type'] is not None
+        assert ad['value'] is not None
+
         timestamp = None
         if ad['type'] == 'item':
+            assert ad['value']['id'] is not None
             timestamp = ad['value']['time']
         elif ad['type'] == 'vip':
+            assert ad['value']['list'][0]['value']['id'] is not None
             timestamp = ad['value']['list'][0]['value']['time']
+        else:
+            pass
+            # raise NotImplementedError ?
 
         if self.last_stamp == timestamp:
             self.page += 1
@@ -57,6 +65,8 @@ class RussiaSpider(scrapy.Spider):
 
     def parse(self, response):
         json_response = json.loads(response.body_as_unicode())
+        assert json_response is not None
+        assert json_response['status'] == 'ok'
         items = json_response['result']['items']
         for item in items:
             self.paginator.preserve(item)
