@@ -145,6 +145,22 @@ class PostgreSQLSavingPipeline(SavingPipeline):
             result = cursor.fetchone()
             is_table_exists = result[0] is not None
             print(f'Is table exists {is_table_exists}')
-            # cursor.execute("CREATE TABLE users (id SERIAL PRIMARY KEY, "              "login CHAR(64), password CHAR(64))")
-            # conn.commit()
-            # pprint(conn.notices)
+            cursor.execute('''CREATE TABLE IF NOT EXISTS avito_simple_ads
+                                                                (id bigint,
+                                                                category_id integer,
+                                                                category_name text,
+                                                                location text,
+                                                                coords_lat float8,
+                                                                coords_lng float8,
+                                                                time bigint,
+                                                                title text,
+                                                                userType text,
+                                                                images json,
+                                                                services text,
+                                                                price text,
+                                                                uri text,
+                                                                uri_mweb text,
+                                                                isVerified bool,
+                                                                isFavorite bool)''')
+
+            conn.commit()
