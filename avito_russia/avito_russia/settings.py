@@ -73,8 +73,8 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
+# 'avito_russia.pipelines.SQLiteSavingPipeline': 0,
 ITEM_PIPELINES = {
-    'avito_russia.pipelines.SQLiteSavingPipeline': 0,
     'avito_russia.pipelines.PostgreSQLSavingPipeline': 1,
 }
 
