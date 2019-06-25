@@ -17,7 +17,7 @@ class Paginator:
         limit=99
     )
 
-    def __init__(self, last_stamp: int = None) -> None:
+    def __init__(self, last_stamp=None) -> None:
         if last_stamp is None:
             delta_timestamp = datetime.now() - timedelta(minutes=3)
             self.last_stamp = int(datetime.timestamp(delta_timestamp))
@@ -71,6 +71,7 @@ class RussiaSpider(scrapy.Spider):
         assert json_response is not None
         assert json_response['status'] == 'ok'
         items = json_response['result']['items']
+
         for item in items:
             self.paginator.preserve(item)
             yield AvitoSimpleAd(item['value'])

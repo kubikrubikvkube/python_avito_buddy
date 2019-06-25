@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 import psycopg2 as psycopg2
+from scrapy.exceptions import DropItem
 
 from .items import AvitoSimpleAd
 from .settings import POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DBNAME
@@ -111,16 +112,21 @@ class SQLiteSavingPipeline(SavingPipeline):
 
         sqlite_logger.info("SQLiteSavingPipeline closed")
         self.connection.close()
-
-
 class PostgreSQLSavingPipeline(SavingPipeline):
     def process_item(self, ad: AvitoSimpleAd, spider):
         list = self.ad_item_to_list(ad)
         with self.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO avito_simple_ads VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                           list)
-            self.connection.commit()
-            self.processed_items += 1
+            cursor.execute("SELECT EXISTS(SELECT id FROM avito_simple_ads WHERE id = %s)", [ad['id']])
+            exists = cursor.fetchone()[0]
+            if exists:
+                postgresql_logger.info(f'This ad already indexed and saved to DB {ad}')
+                print("DropItem")
+                raise DropItem()
+            else:
+                cursor.execute("INSERT INTO avito_simple_ads VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                               list)
+                self.connection.commit()
+                self.processed_items += 1
             print(f'Processed {self.processed_items} items')
 
     def close_spider(self, spider) -> None:
