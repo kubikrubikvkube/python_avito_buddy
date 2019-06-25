@@ -17,9 +17,12 @@ class Paginator:
         limit=99
     )
 
-    def __init__(self) -> None:
-        delta_timestamp = datetime.now() - timedelta(minutes=3)
-        self.last_stamp = int(datetime.timestamp(delta_timestamp))
+    def __init__(self, last_stamp: int = None) -> None:
+        if last_stamp is None:
+            delta_timestamp = datetime.now() - timedelta(minutes=3)
+            self.last_stamp = int(datetime.timestamp(delta_timestamp))
+        else:
+            self.last_stamp = int(last_stamp)
         self.page = 1
 
     def preserve(self, ad: JSONObject) -> None:
