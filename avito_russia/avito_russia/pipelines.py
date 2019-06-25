@@ -12,9 +12,11 @@ import psycopg2 as psycopg2
 from .items import AvitoSimpleAd
 from .settings import POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DBNAME
 
-logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.DEBUG)
+sqlite_logger = logging.getLogger("SQLiteSavingPipeline")
+sqlite_logger.setLevel(level=logging.DEBUG)
 
+postgresql_logger = logging.getLogger("PostgreSQLSavingPipeline")
+postgresql_logger.setLevel(level=logging.DEBUG)
 
 class SavingPipeline(ABC):
     """
@@ -58,7 +60,7 @@ class SQLiteSavingPipeline(SavingPipeline):
     """
 
     def process_item(self, ad: AvitoSimpleAd, spider) -> AvitoSimpleAd:
-        logger.debug(f'Saving {ad} to SQLite DB')
+        sqlite_logger.debug(f'Saving {ad} to SQLite DB')
         """
         Saving AvitoSimpleAd using SQLite database
         :param ad:
@@ -69,7 +71,7 @@ class SQLiteSavingPipeline(SavingPipeline):
         self.connection.execute("INSERT INTO avito_simple_ads VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", list)
         self.connection.commit()
         self.processed_items += 1
-        logger.info(f'Processed {self.processed_items} items')
+        sqlite_logger.info(f'Processed {self.processed_items} items')
         return ad
 
     def open_spider(self, spider) -> None:
@@ -80,7 +82,7 @@ class SQLiteSavingPipeline(SavingPipeline):
         """
 
         self.connection = sqlite3.connect('avito_russia.db')
-        logger.info("SQLiteSavingPipeline DB connection opened")
+        sqlite_logger.info("SQLiteSavingPipeline DB connection opened")
         self.connection.execute('''CREATE TABLE IF NOT EXISTS avito_simple_ads
                                                     (id integer,
                                                     category_id integer,
@@ -107,12 +109,11 @@ class SQLiteSavingPipeline(SavingPipeline):
         :return:
         """
 
-        logger.info("SQLiteSavingPipeline closed")
+        sqlite_logger.info("SQLiteSavingPipeline closed")
         self.connection.close()
 
 
 class PostgreSQLSavingPipeline(SavingPipeline):
-
     def process_item(self, ad: AvitoSimpleAd, spider):
         list = self.ad_item_to_list(ad)
         with self.connection.cursor() as cursor:
@@ -120,23 +121,25 @@ class PostgreSQLSavingPipeline(SavingPipeline):
                            list)
             self.connection.commit()
             self.processed_items += 1
-            logger.info(f'Processed {self.processed_items} items')
+            print(f'Processed {self.processed_items} items')
 
     def close_spider(self, spider) -> None:
+        postgresql_logger.info("Closing PostgreSQLSavingPipeline")
         self.connection.close()
 
     def open_spider(self, spider) -> None:
+        postgresql_logger.info("Starting PostgreSQLSavingPipeline")
         self.connection = psycopg2.connect(dbname=POSTGRES_DBNAME, user=POSTGRES_USER,
                                            password=POSTGRES_PASSWORD, host=POSTGRES_HOST)
 
-        logger.info("PostgreSQLSavingPipeline DB connection opened")
+        postgresql_logger.info("PostgreSQLSavingPipeline DB connection opened")
         with self.connection.cursor() as cursor:
             cursor.execute(f"SELECT to_regclass('{POSTGRES_DBNAME}');")
             result = cursor.fetchone()
             is_table_exists = result[0] is not None
-            print(f'Is table exists {is_table_exists}')
+            postgresql_logger.debug(f'Is {POSTGRES_DBNAME} table exists - {is_table_exists}')
             cursor.execute('''CREATE TABLE IF NOT EXISTS avito_simple_ads
-                                                                (id bigint,
+                                                                (id bigint NOT NULL,
                                                                 category_id integer,
                                                                 category_name text,
                                                                 location text,
@@ -151,7 +154,7 @@ class PostgreSQLSavingPipeline(SavingPipeline):
                                                                 uri text,
                                                                 uri_mweb text,
                                                                 isVerified bool,
-                                                                isFavorite bool)''')
+                                                                isFavorite bool, PRIMARY KEY (id))''')
 
             self.connection.commit()
             self.processed_items = 0
