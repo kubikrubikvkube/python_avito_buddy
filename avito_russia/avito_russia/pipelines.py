@@ -175,6 +175,8 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
 class MongoDBSavingPipeline(DatabaseSavingPipeline):
     def open_spider(self, spider) -> None:
         self.client = pymongo.MongoClient()
+        avito_db = self.client["avito"]
+        self.detailed_collection = avito_db["detailed"]
 
     def close_spider(self, spider) -> None:
         self.client.close()
@@ -185,7 +187,5 @@ class MongoDBSavingPipeline(DatabaseSavingPipeline):
         assert result.status_code == 200
         result_json = result.json()
         result_json['_id'] = ad['id']
-        avito_db = self.client["avito"]
-        detailed_collection = avito_db["detailed"]
-        r = detailed_collection.insert_one(result_json)
+        r = self.detailed_collection.insert_one(result_json)
         assert r.inserted_id is not None
