@@ -8,9 +8,12 @@ from abc import ABC, abstractmethod
 from typing import List
 
 import psycopg2 as psycopg2
+import pymongo as pymongo
+import requests
+from scrapy.exceptions import DropItem
 
 from .items import AvitoSimpleAd
-from .settings import POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DBNAME
+from .settings import POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DBNAME, API_KEY, DEFAULT_REQUEST_HEADERS
 
 sqlite_logger = logging.getLogger("SQLiteSavingPipeline")
 sqlite_logger.setLevel(level=logging.DEBUG)
@@ -18,13 +21,14 @@ sqlite_logger.setLevel(level=logging.DEBUG)
 postgresql_logger = logging.getLogger("PostgreSQLSavingPipeline")
 postgresql_logger.setLevel(level=logging.DEBUG)
 
-class SavingPipeline(ABC):
+
+class DatabaseSavingPipeline(ABC):
     """
     Abstract class for avito saving pipelines to inherit from
     """
 
     @abstractmethod
-    def process_item(self, ad: AvitoSimpleAd, spider):
+    def process_item(self, ad: AvitoSimpleAd, spider) -> AvitoSimpleAd:
         """
         Processing AvitoSimpleAd
         :param ad:
@@ -32,7 +36,7 @@ class SavingPipeline(ABC):
         :return:
         """
 
-    def ad_item_to_list(self, ad: AvitoSimpleAd) -> List:
+    def convert_ad_item_to_list(self, ad: AvitoSimpleAd) -> List:
         assert ad['id'] is not None
         id = int(ad['id'])
         category_id = int(ad['category']['id']) if 'category' in ad else None
@@ -54,7 +58,7 @@ class SavingPipeline(ABC):
                 services, price, uri, uri_mweb, isVerified, isFavorite]
 
 
-class SQLiteSavingPipeline(SavingPipeline):
+class SQLiteSavingPipeline(DatabaseSavingPipeline):
     """
     Pipeline to save using SQLite database
     """
@@ -67,7 +71,7 @@ class SQLiteSavingPipeline(SavingPipeline):
         :param spider:
         :return:
         """
-        list = self.ad_item_to_list(ad)
+        list = self.convert_ad_item_to_list(ad)
         self.connection.execute("INSERT INTO avito_simple_ads VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", list)
         self.connection.commit()
         self.processed_items += 1
@@ -113,15 +117,23 @@ class SQLiteSavingPipeline(SavingPipeline):
         self.connection.close()
 
 
-class PostgreSQLSavingPipeline(SavingPipeline):
-    def process_item(self, ad: AvitoSimpleAd, spider):
-        list = self.ad_item_to_list(ad)
+class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
+    def process_item(self, ad: AvitoSimpleAd, spider) -> AvitoSimpleAd:
+        list = self.convert_ad_item_to_list(ad)
         with self.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO avito_simple_ads VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                           list)
-            self.connection.commit()
-            self.processed_items += 1
+            cursor.execute("SELECT EXISTS(SELECT id FROM avito_simple_ads WHERE id = %s)", [ad['id']])
+            exists = cursor.fetchone()[0]
+            if exists:
+                postgresql_logger.info(f'This ad already indexed and saved to DB {ad}')
+                print("DropItem")
+                raise DropItem()
+            else:
+                cursor.execute("INSERT INTO avito_simple_ads VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                               list)
+                self.connection.commit()
+                self.processed_items += 1
             print(f'Processed {self.processed_items} items')
+            return ad
 
     def close_spider(self, spider) -> None:
         postgresql_logger.info("Closing PostgreSQLSavingPipeline")
@@ -158,3 +170,22 @@ class PostgreSQLSavingPipeline(SavingPipeline):
 
             self.connection.commit()
             self.processed_items = 0
+
+
+class MongoDBSavingPipeline(DatabaseSavingPipeline):
+    def open_spider(self, spider) -> None:
+        self.client = pymongo.MongoClient()
+        avito_db = self.client["avito"]
+        self.detailed_collection = avito_db["detailed"]
+
+    def close_spider(self, spider) -> None:
+        self.client.close()
+
+    def process_item(self, ad: AvitoSimpleAd, spider):
+        url = f"https://m.avito.ru/api/13/items/{ad['id']}?key={API_KEY}&action=view"
+        result = requests.get(url, headers=DEFAULT_REQUEST_HEADERS)
+        assert result.status_code == 200
+        result_json = result.json()
+        result_json['_id'] = ad['id']
+        r = self.detailed_collection.insert_one(result_json)
+        assert r.inserted_id is not None

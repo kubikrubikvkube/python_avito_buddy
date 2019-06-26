@@ -72,10 +72,11 @@ DEFAULT_REQUEST_HEADERS = {
 # }
 
 # Configure item pipelines
-# See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
+
+# 'avito_russia.pipelines.SQLiteSavingPipeline': 0,
 ITEM_PIPELINES = {
-    'avito_russia.pipelines.SQLiteSavingPipeline': 0,
     'avito_russia.pipelines.PostgreSQLSavingPipeline': 1,
+    'avito_russia.pipelines.MongoDBSavingPipeline': 2,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -132,3 +133,5 @@ POSTGRES_HOST = 'localhost'
 POSTGRES_USER = 'postgres'
 POSTGRES_PASSWORD = 'postgres'
 POSTGRES_DBNAME = 'avito'
+
+API_KEY = 'af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir'

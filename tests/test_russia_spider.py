@@ -3,7 +3,7 @@ import unittest
 import requests
 from scrapy.crawler import CrawlerProcess
 
-from avito_russia.avito_russia.spiders.russia import RussiaSpider
+from avito_russia.avito_russia.spiders.last_month import LastMonthSpider
 
 
 class RussiaTest(unittest.TestCase):
@@ -15,7 +15,7 @@ class RussiaTest(unittest.TestCase):
             'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
         })
 
-        process.crawl(RussiaSpider)
+        process.crawl(LastMonthSpider)
         process.start()
 
 
