@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
 from datetime import datetime, timedelta
 from json.decoder import JSONObject
 
@@ -7,33 +8,33 @@ import scrapy
 from scrapy.exceptions import NotSupported
 
 from ..items import AvitoSimpleAd
+from ..settings import API_KEY
+
+logging.disable()
 
 
-class RussiaSpider(scrapy.Spider):
-    name = 'russia'
+class LastMonthSpider(scrapy.Spider):
+    name = 'last_month'
     allowed_domains = ['m.avito.ru']
     url_pattern = 'https://m.avito.ru/api/9/items?key={key}&sort={sort}&locationId={location_id}&page=__page__&lastStamp=__timestamp__&display={display}&limit={limit}'.format(
-        key='af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir',
+        key=API_KEY,
         sort='date',
         location_id='621540',
         display='list',
         limit=99)
 
-    def __init__(self, name=None, **kwargs):
-        super().__init__(name, **kwargs)
+    def __init__(self):
+        super().__init__()
         delta_timestamp = datetime.now() - timedelta(minutes=3)
         self.last_stamp = int(datetime.timestamp(delta_timestamp))
         self.page = 1
 
     def preserve(self, ad: JSONObject) -> None:
-        print(ad)
-        id = None
-        timestamp = None
+        logging.debug(ad)
+
         if ad['type'] == 'item' or ad['type'] == 'xlItem':
-            id = ad['value']['id']
             timestamp = ad['value']['time']
         elif ad['type'] == 'vip':
-            id = ad['value']['list'][0]['value']['id']
             timestamp = ad['value']['list'][0]['value']['time']
         else:
             raise NotSupported()
