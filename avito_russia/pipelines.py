@@ -49,15 +49,11 @@ class DatabaseSavingPipeline(ABC):
         time = int(ad['time']) if 'time' in ad else None
         title = str(ad['title']) if 'title' in ad else None
         userType = str(ad['userType']) if 'userType' in ad else None
-        images = str(ad['images']) if 'images' in ad else None
-        services = str(ad['services']) if 'services' in ad else None
         price = str(ad['price']) if 'price' in ad else None
-        uri = str(ad['uri']) if 'uri' in ad else None
         uri_mweb = str(ad['uri_mweb']) if 'uri_mweb' in ad else None
-        isVerified = str(ad['isVerified']) if 'isVerified' in ad else None
-        isFavorite = str(ad['isFavorite']) if 'isFavorite' in ad else None
-        return [id, category_id, category_name, location, coords_lat, coords_lng, time, title, userType, images,
-                services, price, uri, uri_mweb, isVerified, isFavorite]
+
+        return [id, category_id, category_name, location, coords_lat, coords_lng, time, title, userType, price,
+                uri_mweb]
 
 
 class SQLiteSavingPipeline(DatabaseSavingPipeline):
@@ -135,7 +131,7 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
                 raise DropItem()
             else:
                 list = self.convert_ad_item_to_list(ad)
-                request = f"INSERT INTO {POSTGRES_DBNAME} VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                request = f"INSERT INTO {POSTGRES_DBNAME} VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                 cursor.execute(request, list)
                 self.connection.commit()
                 spider.processed_items += 1
@@ -175,13 +171,9 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
                                "time bigint,"
                                "title text,"
                                "userType text,"
-                               "images text,"
-                               "services text,"
                                "price text,"
-                               "uri text,"
                                "uri_mweb text,"
-                               "isVerified bool,"
-                               "isFavorite bool, PRIMARY KEY (id)"
+                               "PRIMARY KEY (id)"
                                ")".format(POSTGRES_DBNAME))
                 is_exists_after = self._is_table_exists(POSTGRES_DBNAME)
                 assert is_exists_after
