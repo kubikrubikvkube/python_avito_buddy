@@ -119,7 +119,6 @@ class SQLiteSavingPipeline(DatabaseSavingPipeline):
 
 class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
     def process_item(self, ad: AvitoSimpleAd, spider) -> AvitoSimpleAd:
-        list = self.convert_ad_item_to_list(ad)
         with self.connection.cursor() as cursor:
             request = f"SELECT EXISTS(SELECT id FROM {POSTGRES_DBNAME} WHERE id = %s)"
             cursor.execute(request, [ad['id']])
@@ -129,6 +128,7 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
                 print("DropItem")
                 raise DropItem()
             else:
+                list = self.convert_ad_item_to_list(ad)
                 request = f"INSERT INTO {POSTGRES_DBNAME} VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                 cursor.execute(request, list)
                 self.connection.commit()
@@ -175,9 +175,9 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
                                "isVerified bool,"
                                "isFavorite bool, PRIMARY KEY (id)"
                                ")".format(POSTGRES_DBNAME))
-                postgresql_logger.debug(
-                    f"Is '{POSTGRES_DBNAME}' table exists after CREATE TABLE execution - {self._is_table_exists(
-                        POSTGRES_DBNAME)}")
+                is_exists_after = self._is_table_exists(POSTGRES_DBNAME)
+                info_msg = f"Is '{POSTGRES_DBNAME}' table exists after CREATE TABLE execution - {is_exists_after}"
+                postgresql_logger.debug(info_msg)
             self.connection.commit()
             self.processed_items = 0
 
