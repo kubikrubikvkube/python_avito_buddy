@@ -13,7 +13,8 @@ import requests
 from scrapy.exceptions import DropItem
 
 from .items import AvitoSimpleAd
-from .settings import POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DBNAME, API_KEY, DEFAULT_REQUEST_HEADERS
+from .settings import POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DBNAME, API_KEY, \
+    DEFAULT_REQUEST_HEADERS
 
 sqlite_logger = logging.getLogger("SQLiteSavingPipeline")
 sqlite_logger.setLevel(level=logging.DEBUG)
@@ -26,6 +27,7 @@ class DatabaseSavingPipeline(ABC):
     """
     Abstract class for avito saving pipelines to inherit from
     """
+
 
     @abstractmethod
     def process_item(self, ad: AvitoSimpleAd, spider) -> AvitoSimpleAd:
@@ -74,8 +76,8 @@ class SQLiteSavingPipeline(DatabaseSavingPipeline):
         list = self.convert_ad_item_to_list(ad)
         self.connection.execute("INSERT INTO avito_simple_ads VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", list)
         self.connection.commit()
-        self.processed_items += 1
-        sqlite_logger.info(f'Processed {self.processed_items} items')
+        spider.processed_items += 1
+        sqlite_logger.info(f'Processed {spider.processed_items} items')
         return ad
 
     def open_spider(self, spider) -> None:
@@ -104,7 +106,7 @@ class SQLiteSavingPipeline(DatabaseSavingPipeline):
                                                     uri_mweb text,
                                                     isVerified text,
                                                     isFavorite text)''')
-        self.processed_items = 0
+
 
     def close_spider(self, spider) -> None:
         """
@@ -126,16 +128,20 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
             exists = cursor.fetchone()[0]
             if exists:
                 postgresql_logger.info(f'This ad already indexed and saved to DB {ad}')
-                print("DropItem")
+                spider.dropped_items += 1
+                spider.dropped_items_in_a_row += 1
+                print(
+                    f"DropItem, dropped items {spider.dropped_items}, dropped items in a row {spider.dropped_items_in_a_row}")
                 raise DropItem()
             else:
                 list = self.convert_ad_item_to_list(ad)
                 request = f"INSERT INTO {POSTGRES_DBNAME} VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                 cursor.execute(request, list)
                 self.connection.commit()
-                self.processed_items += 1
-            print(f'Processed {self.processed_items} items')
-            postgresql_logger.debug(f'Processed {self.processed_items} items')
+                spider.processed_items += 1
+                spider.dropped_items_in_a_row = 0
+            print(f'Processed {spider.processed_items} items')
+            postgresql_logger.debug(f'Processed {spider.processed_items} items')
             return ad
 
     def close_spider(self, spider) -> None:
@@ -184,7 +190,6 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
                 cursor.execute(f"CREATE INDEX idx_time ON {POSTGRES_DBNAME}(time);")
                 postgresql_logger.debug(info_msg)
             self.connection.commit()
-            self.processed_items = 0
 
 
 class MongoDBSavingPipeline(DatabaseSavingPipeline):
