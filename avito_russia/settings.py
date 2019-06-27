@@ -70,11 +70,12 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Configure item pipelines
 
-# 'avito_russia.pipelines.SQLiteSavingPipeline': 0,
-ITEM_PIPELINES = {
-    'avito_russia.pipelines.PostgreSQLSavingPipeline': 1,
-    'avito_russia.pipelines.MongoDBSavingPipeline': 2,
-}
+#
+# ITEM_PIPELINES = {
+#    'avito_russia.pipelines.SQLiteSavingPipeline': 0,
+#    'avito_russia.pipelines.PostgreSQLSavingPipeline': 1,
+#    'avito_russia.pipelines.MongoDBSavingPipeline': 2,
+# }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -85,9 +86,9 @@ AUTOTHROTTLE_ENABLED = True
 # AUTOTHROTTLE_MAX_DELAY = 15
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 1
+AUTOTHROTTLE_TARGET_CONCURRENCY = 2
 # Enable showing throttling stats for every response received:
-AUTOTHROTTLE_DEBUG = False
+AUTOTHROTTLE_DEBUG = True
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
@@ -133,3 +134,4 @@ POSTGRES_PASSWORD = "postgres"
 POSTGRES_DBNAME = "avito"
 
 API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
+DROPPED_ITEMS_THRESHOLD = 200

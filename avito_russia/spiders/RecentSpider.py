@@ -5,10 +5,10 @@ from datetime import datetime, timedelta
 from json.decoder import JSONObject
 
 import scrapy
-from scrapy.exceptions import NotSupported
+from scrapy.exceptions import NotSupported, CloseSpider
 
 from ..items import AvitoSimpleAd
-from ..settings import API_KEY
+from ..settings import API_KEY, DROPPED_ITEMS_THRESHOLD
 
 
 class RecentSpider(scrapy.Spider):
@@ -21,11 +21,20 @@ class RecentSpider(scrapy.Spider):
         display='list',
         limit=99)
 
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'avito_russia.pipelines.PostgreSQLSavingPipeline': 0,
+        }
+    }
+
     def __init__(self):
         super().__init__()
         delta_timestamp = datetime.now() - timedelta(minutes=3)
         self.last_stamp = int(datetime.timestamp(delta_timestamp))
         self.page = 1
+        self.dropped_items = 0
+        self.dropped_items_in_a_row = 0
+        self.processed_items = 0
 
     def preserve(self, ad: JSONObject) -> None:
         logging.debug(ad)
@@ -44,6 +53,8 @@ class RecentSpider(scrapy.Spider):
             self.page = 1
 
     def next_url(self) -> str:
+        if self.dropped_items_in_a_row > DROPPED_ITEMS_THRESHOLD:
+            raise CloseSpider("Dropped Items Threshold is excedeed")
         page = str(self.page)
         last_stamp = str(self.last_stamp)
         return self.url_pattern.replace('__page__', page).replace('__timestamp__', last_stamp)

@@ -1,5 +1,4 @@
 import logging
-from json.decoder import JSONObject
 
 import scrapy
 
@@ -11,13 +10,16 @@ class DetailedItemsSpider(scrapy.Spider):
     allowed_domains = ['m.avito.ru']
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
 
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'avito_russia.pipelines.MongoDBSavingPipeline': 0,
+        }
+    }
+
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         logging.info(f"DetailedItemsSpider initialized")
         return super().from_crawler(crawler, *args, **kwargs)
-
-    def preserve(self, ad: JSONObject) -> None:
-        pass
 
     def start_requests(self):
         self.logger.debug(f'Starting requests processing')
