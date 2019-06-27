@@ -121,18 +121,19 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
     def process_item(self, ad: AvitoSimpleAd, spider) -> AvitoSimpleAd:
         list = self.convert_ad_item_to_list(ad)
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT EXISTS(SELECT id FROM avito_simple_ads WHERE id = %s)", [ad['id']])
+            request = f"SELECT EXISTS(SELECT id FROM {POSTGRES_DBNAME} WHERE id = %s)"
+            cursor.execute(request, [ad['id']])
             exists = cursor.fetchone()[0]
             if exists:
                 postgresql_logger.info(f'This ad already indexed and saved to DB {ad}')
                 print("DropItem")
                 raise DropItem()
             else:
-                cursor.execute("INSERT INTO avito_simple_ads VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                               list)
+                request = f"INSERT INTO {POSTGRES_DBNAME} VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                cursor.execute(request, list)
                 self.connection.commit()
                 self.processed_items += 1
-            print(f'Processed {self.processed_items} items')
+            postgresql_logger.debug(f'Processed {self.processed_items} items')
             return ad
 
     def close_spider(self, spider) -> None:

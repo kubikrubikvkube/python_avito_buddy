@@ -11,9 +11,6 @@ class DetailedItemsSpider(scrapy.Spider):
     allowed_domains = ['m.avito.ru']
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
 
-    def __init__(self, name=None, **kwargs):
-        super().__init__(name, **kwargs)
-
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         logging.info(f"DetailedItemsSpider initialized")

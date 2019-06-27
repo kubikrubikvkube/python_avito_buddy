@@ -110,7 +110,7 @@ FEED_EXPORT_ENCODING = 'utf-8'
 LOG_STDOUT = False
 
 # Enable memory debugging
-MEMDEBUG_ENABLED = False
+MEMDEBUG_ENABLED = True
 
 # For the sake of stability we need to implement request retry logic
 RETRY_ENABLED = True
@@ -127,9 +127,9 @@ TELNETCONSOLE_ENABLED = False
 TELNETCONSOLE_USERNAME = 'scrapy'
 TELNETCONSOLE_PASSWORD = 'scrapy'
 
-POSTGRES_HOST = 'localhost'
-POSTGRES_USER = 'postgres'
-POSTGRES_PASSWORD = 'postgres'
-POSTGRES_DBNAME = 'avito'
+POSTGRES_HOST = "localhost"
+POSTGRES_USER = "postgres"
+POSTGRES_PASSWORD = "postgres"
+POSTGRES_DBNAME = "avito"
 
-API_KEY = 'af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir'
+API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
