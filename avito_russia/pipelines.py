@@ -121,23 +121,31 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
     def process_item(self, ad: AvitoSimpleAd, spider) -> AvitoSimpleAd:
         list = self.convert_ad_item_to_list(ad)
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT EXISTS(SELECT id FROM avito_simple_ads WHERE id = %s)", [ad['id']])
+            request = f"SELECT EXISTS(SELECT id FROM {POSTGRES_DBNAME} WHERE id = %s)"
+            cursor.execute(request, [ad['id']])
             exists = cursor.fetchone()[0]
             if exists:
                 postgresql_logger.info(f'This ad already indexed and saved to DB {ad}')
                 print("DropItem")
                 raise DropItem()
             else:
-                cursor.execute("INSERT INTO avito_simple_ads VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                               list)
+                request = f"INSERT INTO {POSTGRES_DBNAME} VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                cursor.execute(request, list)
                 self.connection.commit()
                 self.processed_items += 1
-            print(f'Processed {self.processed_items} items')
+            postgresql_logger.debug(f'Processed {self.processed_items} items')
             return ad
 
     def close_spider(self, spider) -> None:
         postgresql_logger.info("Closing PostgreSQLSavingPipeline")
         self.connection.close()
+
+    def _is_table_exists(self, table_name: str) -> bool:
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT to_regclass('{table_name}');")
+            result = cursor.fetchone()
+            is_table_exists = result[0] is not None
+            return is_table_exists
 
     def open_spider(self, spider) -> None:
         postgresql_logger.info("Starting PostgreSQLSavingPipeline")
@@ -146,28 +154,30 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
 
         postgresql_logger.info("PostgreSQLSavingPipeline DB connection opened")
         with self.connection.cursor() as cursor:
-            cursor.execute(f"SELECT to_regclass('{POSTGRES_DBNAME}');")
-            result = cursor.fetchone()
-            is_table_exists = result[0] is not None
-            postgresql_logger.debug(f'Is {POSTGRES_DBNAME} table exists - {is_table_exists}')
-            cursor.execute('''CREATE TABLE IF NOT EXISTS avito_simple_ads
-                                                                (id bigint NOT NULL,
-                                                                category_id integer,
-                                                                category_name text,
-                                                                location text,
-                                                                coords_lat float8,
-                                                                coords_lng float8,
-                                                                time bigint,
-                                                                title text,
-                                                                userType text,
-                                                                images text,
-                                                                services text,
-                                                                price text,
-                                                                uri text,
-                                                                uri_mweb text,
-                                                                isVerified bool,
-                                                                isFavorite bool, PRIMARY KEY (id))''')
-
+            is_table_exists = self._is_table_exists(POSTGRES_DBNAME)
+            postgresql_logger.debug(f"Is '{POSTGRES_DBNAME}' table exists - {is_table_exists}")
+            if not is_table_exists:
+                cursor.execute("CREATE TABLE IF NOT EXISTS {}"
+                               "(id bigint NOT NULL,"
+                               "category_id integer,"
+                               "category_name text,"
+                               "location text,"
+                               "coords_lat float8,"
+                               "coords_lng float8,"
+                               "time bigint,"
+                               "title text,"
+                               "userType text,"
+                               "images text,"
+                               "services text,"
+                               "price text,"
+                               "uri text,"
+                               "uri_mweb text,"
+                               "isVerified bool,"
+                               "isFavorite bool, PRIMARY KEY (id)"
+                               ")".format(POSTGRES_DBNAME))
+                postgresql_logger.debug(
+                    f"Is '{POSTGRES_DBNAME}' table exists after CREATE TABLE execution - {self._is_table_exists(
+                        POSTGRES_DBNAME)}")
             self.connection.commit()
             self.processed_items = 0
 
@@ -189,3 +199,4 @@ class MongoDBSavingPipeline(DatabaseSavingPipeline):
         result_json['_id'] = ad['id']
         r = self.detailed_collection.insert_one(result_json)
         assert r.inserted_id is not None
+        return ad
