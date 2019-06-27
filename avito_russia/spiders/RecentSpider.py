@@ -21,6 +21,12 @@ class RecentSpider(scrapy.Spider):
         display='list',
         limit=99)
 
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'avito_russia.pipelines.PostgreSQLSavingPipeline': 0,
+        }
+    }
+
     def __init__(self):
         super().__init__()
         delta_timestamp = datetime.now() - timedelta(minutes=3)

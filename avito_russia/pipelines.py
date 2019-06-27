@@ -118,6 +118,7 @@ class SQLiteSavingPipeline(DatabaseSavingPipeline):
 
 
 class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
+
     def process_item(self, ad: AvitoSimpleAd, spider) -> AvitoSimpleAd:
         with self.connection.cursor() as cursor:
             request = f"SELECT EXISTS(SELECT id FROM {POSTGRES_DBNAME} WHERE id = %s)"
@@ -133,6 +134,7 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
                 cursor.execute(request, list)
                 self.connection.commit()
                 self.processed_items += 1
+            print(f'Processed {self.processed_items} items')
             postgresql_logger.debug(f'Processed {self.processed_items} items')
             return ad
 
@@ -176,7 +178,10 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
                                "isFavorite bool, PRIMARY KEY (id)"
                                ")".format(POSTGRES_DBNAME))
                 is_exists_after = self._is_table_exists(POSTGRES_DBNAME)
+                assert is_exists_after
                 info_msg = f"Is '{POSTGRES_DBNAME}' table exists after CREATE TABLE execution - {is_exists_after}"
+                cursor.execute(f"CREATE UNIQUE INDEX idx_id ON {POSTGRES_DBNAME}(id);")
+                cursor.execute(f"CREATE INDEX idx_time ON {POSTGRES_DBNAME}(time);")
                 postgresql_logger.debug(info_msg)
             self.connection.commit()
             self.processed_items = 0
