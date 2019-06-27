@@ -10,11 +10,9 @@ from scrapy.exceptions import NotSupported
 from ..items import AvitoSimpleAd
 from ..settings import API_KEY
 
-logging.disable()
 
-
-class LastMonthSpider(scrapy.Spider):
-    name = 'last_month'
+class RecentSpider(scrapy.Spider):
+    name = 'recent'
     allowed_domains = ['m.avito.ru']
     url_pattern = 'https://m.avito.ru/api/9/items?key={key}&sort={sort}&locationId={location_id}&page=__page__&lastStamp=__timestamp__&display={display}&limit={limit}'.format(
         key=API_KEY,

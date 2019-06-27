@@ -34,9 +34,6 @@ ROBOTSTXT_OBEY = False
 # Disable cookies (enabled by default)
 # COOKIES_ENABLED = False
 
-# Disable Telnet Console (enabled by default)
-# TELNETCONSOLE_ENABLED = False
-
 # Override the default request headers:
 # DEFAULT_REQUEST_HEADERS = {
 #   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -126,6 +123,7 @@ STATS_CLASS = 'scrapy.statscollectors.MemoryStatsCollector'
 STATS_DUMP = True
 
 # For debug purposes telnet console should be enabled
+TELNETCONSOLE_ENABLED = True
 TELNETCONSOLE_USERNAME = 'scrapy'
 TELNETCONSOLE_PASSWORD = 'scrapy'
 
