@@ -8,8 +8,10 @@ import scrapy
 from scrapy.exceptions import NotSupported, CloseSpider
 
 from ..items import AvitoSimpleAd
-from ..settings import API_KEY, DROPPED_ITEMS_THRESHOLD
+from ..settings import API_KEY
 
+logger = logging.getLogger("RecentSpider")
+logger.setLevel(level=logging.INFO)
 
 class RecentSpider(scrapy.Spider):
     name = 'recent'
@@ -32,9 +34,8 @@ class RecentSpider(scrapy.Spider):
         delta_timestamp = datetime.now() - timedelta(minutes=3)
         self.last_stamp = int(datetime.timestamp(delta_timestamp))
         self.page = 1
-        self.dropped_items = 0
-        self.dropped_items_in_a_row = 0
-        self.processed_items = 0
+        self.should_be_closed = False
+        self.close_reason = None
 
     def preserve(self, ad: JSONObject) -> None:
         logging.debug(ad)
@@ -53,8 +54,9 @@ class RecentSpider(scrapy.Spider):
             self.page = 1
 
     def next_url(self) -> str:
-        if self.dropped_items_in_a_row > DROPPED_ITEMS_THRESHOLD:
-            raise CloseSpider("Dropped Items Threshold is excedeed")
+        if self.should_be_closed:
+            print(f"Closing RecentSpider because {self.close_reason}")
+            raise CloseSpider(self.close_reason)
         page = str(self.page)
         last_stamp = str(self.last_stamp)
         return self.url_pattern.replace('__page__', page).replace('__timestamp__', last_stamp)
