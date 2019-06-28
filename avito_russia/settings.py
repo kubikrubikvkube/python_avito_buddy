@@ -134,4 +134,4 @@ POSTGRES_PASSWORD = "postgres"
 POSTGRES_DBNAME = "avito"
 
 API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
-DROPPED_ITEMS_THRESHOLD = 200
+DROPPED_ITEMS_THRESHOLD = 90
