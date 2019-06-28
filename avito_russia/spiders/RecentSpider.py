@@ -10,6 +10,8 @@ from scrapy.exceptions import NotSupported, CloseSpider
 from ..items import AvitoSimpleAd
 from ..settings import API_KEY
 
+logger = logging.getLogger("RecentSpider")
+logger.setLevel(level=logging.INFO)
 
 class RecentSpider(scrapy.Spider):
     name = 'recent'
@@ -53,6 +55,7 @@ class RecentSpider(scrapy.Spider):
 
     def next_url(self) -> str:
         if self.should_be_closed:
+            print(f"Closing RecentSpider because {self.close_reason}")
             raise CloseSpider(self.close_reason)
         page = str(self.page)
         last_stamp = str(self.last_stamp)

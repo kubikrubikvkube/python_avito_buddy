@@ -8,13 +8,10 @@ from abc import ABC, abstractmethod
 from typing import List
 
 import psycopg2 as psycopg2
-import pymongo as pymongo
-import requests
 from scrapy.exceptions import DropItem
 
 from .items import AvitoSimpleAd
-from .settings import POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DBNAME, API_KEY, \
-    DEFAULT_REQUEST_HEADERS, DROPPED_ITEMS_THRESHOLD
+from .settings import POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DBNAME, DROPPED_ITEMS_THRESHOLD
 
 sqlite_logger = logging.getLogger("SQLiteSavingPipeline")
 sqlite_logger.setLevel(level=logging.DEBUG)
@@ -155,23 +152,3 @@ class PostgreSQLSavingPipeline(DatabaseSavingPipeline):
                 cursor.execute(f"CREATE INDEX idx_is_detailed ON {POSTGRES_DBNAME}(is_detailed);")
                 postgresql_logger.debug(info_msg)
             self.connection.commit()
-
-
-class MongoDBSavingPipeline(DatabaseSavingPipeline):
-    def open_spider(self, spider) -> None:
-        self.client = pymongo.MongoClient()
-        avito_db = self.client["avito"]
-        self.detailed_collection = avito_db["detailed"]
-
-    def close_spider(self, spider) -> None:
-        self.client.close()
-
-    def process_item(self, ad: AvitoSimpleAd, spider):
-        url = f"https://m.avito.ru/api/13/items/{ad['id']}?key={API_KEY}&action=view"
-        result = requests.get(url, headers=DEFAULT_REQUEST_HEADERS)
-        assert result.status_code == 200
-        result_json = result.json()
-        result_json['_id'] = ad['id']
-        r = self.detailed_collection.insert_one(result_json)
-        assert r.inserted_id is not None
-        return ad

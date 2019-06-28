@@ -1,6 +1,8 @@
+import json
 import logging
 
 import psycopg2
+import pymongo
 import scrapy
 from psycopg2._psycopg import connection
 
@@ -15,11 +17,7 @@ class DetailedItemsSpider(scrapy.Spider):
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
     connection: connection
 
-    custom_settings = {
-        'ITEM_PIPELINES': {
-            'avito_russia.pipelines.MongoDBSavingPipeline': 0,
-        }
-    }
+    custom_settings = {}
 
     def __init__(self, name=None, **kwargs):
         logging.info(f"DetailedItemsSpider initialized")
@@ -32,6 +30,14 @@ class DetailedItemsSpider(scrapy.Spider):
             logger.info(f"Table {POSTGRES_DBNAME} exists {is_exists}")
             assert is_exists
         logger.info("PostgreSQL DB connection opened")
+
+        self.client = pymongo.MongoClient()
+        avito_db = self.client["avito"]
+        self.detailed_collection = avito_db["detailed"]
+        logger.info("MongoDB connection opened")
+        logger.info(f"MongoDB server info: {self.client.server_info()}")
+
+        self.parsed_items = 0
         super().__init__(name, **kwargs)
 
     @classmethod
@@ -40,13 +46,35 @@ class DetailedItemsSpider(scrapy.Spider):
 
     def start_requests(self):
         self.logger.debug(f'Starting requests processing')
-        # Scrapy calls it only once, so it is safe to implement start_requests() as a generator.
-        # генератор всех ссылок в постгресе с учётом дублирования
-        return []
+        self.start_urls = [self.next_url()]
+        return super().start_requests()
+
+    def next_url(self) -> str:
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT id FROM {POSTGRES_DBNAME} WHERE is_detailed = False ORDER BY time DESC LIMIT 1")
+            raw_result = cursor.fetchone()
+            assert raw_result is not None
+            id = raw_result[0]
+            return f"https://m.avito.ru/api/13/items/{id}?key={API_KEY}&action=view"
 
     def parse(self, response):
-        self.logger.debug(f'Parsing response {response}')
-        pass
+        json_response = json.loads(response.body_as_unicode())
+        self.logger.debug(f'Parsing response {json_response}')
+        # insert into mongodb
+        #
+        item_id = json_response['id']
+        json_response['_id'] = item_id
+        r = self.detailed_collection.insert_one(json_response)
+        assert r.inserted_id is not None and r.inserted_id == item_id
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"UPDATE {POSTGRES_DBNAME} SET is_detailed = True WHERE id = {item_id}")
+            cursor.connection.commit()
+        self.parsed_items += 1
+        print(f"Parsed items {self.parsed_items}")
+        yield scrapy.Request(self.next_url())
+
+
+
 
     @staticmethod
     def close(spider, reason):
@@ -54,5 +82,7 @@ class DetailedItemsSpider(scrapy.Spider):
         is_closed = spider.connection.closed
         logger.info(f"PostgreSQL connection is closed {bool(is_closed)}")
         assert is_closed
+        spider.client.close()
+        logging.info("MongoDB connection is closed")
         logging.info(f"DetailedItemsSpider closed: {reason}")
         return super().close(spider, reason)
