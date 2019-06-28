@@ -136,3 +136,4 @@ POSTGRES_DBNAME = "avito"
 
 API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
 DROPPED_ITEMS_THRESHOLD = 90
+BROKEN_ADS_THRESHOLD = 20
