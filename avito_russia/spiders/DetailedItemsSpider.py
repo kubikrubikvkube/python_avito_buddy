@@ -1,5 +1,6 @@
 import json
 import logging
+from urllib import parse
 
 import psycopg2
 import pymongo
@@ -16,8 +17,6 @@ class DetailedItemsSpider(scrapy.Spider):
     allowed_domains = ['m.avito.ru']
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
     connection: connection
-
-    custom_settings = {}
 
     def __init__(self, name=None, **kwargs):
         logging.info(f"DetailedItemsSpider initialized")
@@ -60,12 +59,19 @@ class DetailedItemsSpider(scrapy.Spider):
     def parse(self, response):
         json_response = json.loads(response.body_as_unicode())
         self.logger.debug(f'Parsing response {json_response}')
-        # insert into mongodb
-        #
-        item_id = json_response['id']
-        json_response['_id'] = item_id
-        r = self.detailed_collection.insert_one(json_response)
-        assert r.inserted_id is not None and r.inserted_id == item_id
+        if response.status == 200:
+            item_id = json_response['id']
+            json_response['_id'] = item_id
+            r = self.detailed_collection.insert_one(json_response)
+            assert r.inserted_id is not None and r.inserted_id == item_id
+        else:
+            request_url = response.request.url
+            path = parse.urlparse(request_url).path
+            item_id = path.split("/")[-1]
+            json_response['_id'] = item_id
+            r = self.detailed_collection.insert_one(json_response)
+            assert r.inserted_id is not None and r.inserted_id == item_id
+
         with self.connection.cursor() as cursor:
             cursor.execute(f"UPDATE {POSTGRES_DBNAME} SET is_detailed = True WHERE id = {item_id}")
             cursor.connection.commit()
