@@ -52,9 +52,9 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-# SPIDER_MIDDLEWARES = {
-#    'avito_russia.middlewares.AvitoRussiaSpiderMiddleware': 543,
-# }
+SPIDER_MIDDLEWARES = {
+    'scrapy.spidermiddlewares.httperror.HttpErrorMiddleware': None
+}
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
@@ -65,7 +65,8 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
 # EXTENSIONS = {
-#    'scrapy.extensions.telnet.TelnetConsole': None,
+#   'scrapy.extensions.telnet.CloseSpider': None,
+#
 # }
 
 # Configure item pipelines
@@ -135,3 +136,4 @@ POSTGRES_DBNAME = "avito"
 
 API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
 DROPPED_ITEMS_THRESHOLD = 90
+BROKEN_ADS_THRESHOLD = 20
