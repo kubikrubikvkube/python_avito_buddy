@@ -6,6 +6,7 @@ import psycopg2
 import pymongo
 import scrapy
 from psycopg2._psycopg import connection
+from pymongo.errors import DuplicateKeyError
 from scrapy.exceptions import CloseSpider
 
 from avito_russia.settings import API_KEY, POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, \
@@ -64,22 +65,32 @@ class DetailedItemsSpider(scrapy.Spider):
     def parse(self, response):
         json_response = json.loads(response.body_as_unicode())
         self.logger.debug(f'Parsing response {json_response}')
-        if response.status == 200:
-            item_id = json_response['id']
-            json_response['_id'] = item_id
-            r = self.detailed_collection.insert_one(json_response)
-            assert r.inserted_id is not None and r.inserted_id == item_id
-            self.broken_ads_in_a_row = 0
-        else:
-            request_url = response.request.url
-            path = parse.urlparse(request_url).path
-            item_id = path.split("/")[-1]
-            json_response['_id'] = item_id
-            r = self.detailed_collection.insert_one(json_response)
-            assert r.inserted_id is not None and r.inserted_id == item_id
+        try:
+            if response.status == 200:
+                item_id = json_response['id']
+                json_response['_id'] = item_id
+                r = self.detailed_collection.insert_one(json_response)
+                assert r.inserted_id is not None and r.inserted_id == item_id
+                self.broken_ads_in_a_row = 0
+            else:
+                request_url = response.request.url
+                path = parse.urlparse(request_url).path
+                item_id = path.split("/")[-1]
+                json_response['_id'] = item_id
+                r = self.detailed_collection.insert_one(json_response)
+                assert r.inserted_id is not None and r.inserted_id == item_id
+                self.broken_ads += 1
+                self.broken_ads_in_a_row += 1
+                print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
+        except DuplicateKeyError as dke:
+            # переписать логику. Возможно обработано фрагментированно, а значит должны спрашивать монгу
+            # о том, обработан ли уже такой id, и если да, то игнорить.
+            # Это позволит обрабатывать базу многопоточно.
+            print(dke)
             self.broken_ads += 1
             self.broken_ads_in_a_row += 1
             print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
+            logger.error(dke)
 
         with self.connection.cursor() as cursor:
             cursor.execute(f"UPDATE {POSTGRES_DBNAME} SET is_detailed = True WHERE id = {item_id}")
