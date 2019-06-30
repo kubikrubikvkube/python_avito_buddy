@@ -83,7 +83,13 @@ class DetailedItemsSpider(scrapy.Spider):
                 self.broken_ads_in_a_row += 1
                 print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
         except DuplicateKeyError as dke:
+            # переписать логику. Возможно обработано фрагментированно, а значит должны спрашивать монгу
+            # о том, обработан ли уже такой id, и если да, то игнорить.
+            # Это позволит обрабатывать базу многопоточно.
             print(dke)
+            self.broken_ads += 1
+            self.broken_ads_in_a_row += 1
+            print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
             logger.error(dke)
 
         with self.connection.cursor() as cursor:
