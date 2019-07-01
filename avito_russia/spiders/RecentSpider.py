@@ -19,7 +19,7 @@ class RecentSpider(scrapy.Spider):
     url_pattern = 'https://m.avito.ru/api/9/items?key={key}&sort={sort}&locationId={location_id}&page=__page__&lastStamp=__timestamp__&display={display}&limit={limit}'.format(
         key=API_KEY,
         sort='date',
-        location_id='621540',
+        location_id='653240',
         display='list',
         limit=99)
 

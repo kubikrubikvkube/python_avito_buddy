@@ -43,6 +43,7 @@ class DetailedItemsSpider(scrapy.Spider):
         self.parsed_items = 0
         self.broken_ads = 0
         self.broken_ads_in_a_row = 0
+        self.ids = []
         super().__init__(name, **kwargs)
 
     @classmethod
@@ -55,12 +56,18 @@ class DetailedItemsSpider(scrapy.Spider):
         return super().start_requests()
 
     def next_url(self) -> str:
-        with self.connection.cursor() as cursor:
-            cursor.execute(f"SELECT id FROM {POSTGRES_DBNAME} WHERE is_detailed = False ORDER BY time DESC LIMIT 1")
-            raw_result = cursor.fetchone()
-            assert raw_result is not None
-            id = raw_result[0]
-            return f"https://m.avito.ru/api/13/items/{id}?key={API_KEY}&action=view"
+        if not self.ids:
+            with self.connection.cursor() as cursor:
+                cursor.execute(f"SELECT id FROM {POSTGRES_DBNAME} WHERE is_detailed = False ORDER BY random() LIMIT 50")
+                # TODO если программа завершает свою работу до окончания обработки пачки id'шников они
+                # TODO оставшиеся айдишники никогда не будут обработаны
+                for raw_id in cursor:
+                    id = raw_id[0]
+                    self.ids.append(id)
+                for id in self.ids:
+                    cursor.execute(f"UPDATE {POSTGRES_DBNAME} SET is_detailed = True WHERE id = {id}")
+                    cursor.connection.commit()
+        return f"https://m.avito.ru/api/13/items/{self.ids.pop(0)}?key={API_KEY}&action=view"
 
     def parse(self, response):
         json_response = json.loads(response.body_as_unicode())
@@ -89,7 +96,7 @@ class DetailedItemsSpider(scrapy.Spider):
             print(dke)
             self.broken_ads += 1
             self.broken_ads_in_a_row += 1
-            print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
+            print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row} - DuplicateKeyError")
             logger.error(dke)
 
         with self.connection.cursor() as cursor:
