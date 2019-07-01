@@ -87,7 +87,7 @@ AUTOTHROTTLE_ENABLED = True
 # AUTOTHROTTLE_MAX_DELAY = 15
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 2
+AUTOTHROTTLE_TARGET_CONCURRENCY = 3
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = True
 
@@ -136,4 +136,4 @@ POSTGRES_DBNAME = "avito"
 
 API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
 DROPPED_ITEMS_THRESHOLD = 90
-BROKEN_ADS_THRESHOLD = 20
+BROKEN_ADS_THRESHOLD = 30
