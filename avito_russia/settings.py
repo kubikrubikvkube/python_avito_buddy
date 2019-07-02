@@ -133,6 +133,7 @@ POSTGRES_HOST = "localhost"
 POSTGRES_USER = "postgres"
 POSTGRES_PASSWORD = "postgres"
 POSTGRES_DBNAME = "avito"
+POSTGRES_PHONENUMBERS_TABLENAME = "phonenumbers"
 
 API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
 DROPPED_ITEMS_THRESHOLD = 90

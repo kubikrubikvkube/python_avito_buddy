@@ -9,7 +9,7 @@ from psycopg2._psycopg import connection
 from pymongo.errors import DuplicateKeyError
 from scrapy.exceptions import CloseSpider
 
-from avito_russia.settings import API_KEY, POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, \
+from ..settings import API_KEY, POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, \
     BROKEN_ADS_THRESHOLD
 
 logger = logging.getLogger("DetailedItemsSpider")
