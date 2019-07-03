@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import csv
 import logging
 import sqlite3
@@ -67,9 +69,7 @@ class NamesDatabase:
 
     def __del__(self):
         self.conn.close()
-
-
-#        logging.info("SQLite3 in-memory names database closed")
+        logging.info("SQLite3 in-memory names database closed")
 
 
 def strip(string_to_strip: str) -> str:
@@ -87,7 +87,6 @@ if __name__ == '__main__':
         with open('phone_numbers.csv', mode='w', newline='', encoding='utf-8') as phonenumbers_file:
             pool = Pool(processes=10)
             items = find_all_is_detailed_items(conn)
-            print(len(items))
             for id in items:
                 def process_id(id):
                     item = detailed_collection.find_one(id)
