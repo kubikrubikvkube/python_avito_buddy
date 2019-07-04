@@ -135,6 +135,6 @@ POSTGRES_PASSWORD = "postgres"
 POSTGRES_DBNAME = "avito"
 POSTGRES_PHONENUMBERS_TABLENAME = "phonenumbers"
 
-API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
+API_KEY = "..."
 DROPPED_ITEMS_THRESHOLD = 90
 BROKEN_ADS_THRESHOLD = 30
