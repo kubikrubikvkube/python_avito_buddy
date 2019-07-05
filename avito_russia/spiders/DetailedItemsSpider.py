@@ -79,15 +79,12 @@ class DetailedItemsSpider(scrapy.Spider):
                 item_id = json_response['id']
                 json_response['_id'] = item_id
                 r = self.detailed_collection.insert_one(json_response)
-                assert r.inserted_id is not None and r.inserted_id == item_id
                 self.broken_ads_in_a_row = 0
             else:
                 request_url = response.request.url
                 path = parse.urlparse(request_url).path
                 item_id = path.split("/")[-1]
                 json_response['_id'] = item_id
-                r = self.detailed_collection.insert_one(json_response)
-                assert r.inserted_id is not None and r.inserted_id == item_id
                 self.broken_ads += 1
                 self.broken_ads_in_a_row += 1
                 print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
