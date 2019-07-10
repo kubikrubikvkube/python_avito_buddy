@@ -4,43 +4,37 @@ import json
 import logging
 from urllib import parse
 
-import psycopg2
 import pymongo
 import scrapy
 from psycopg2._psycopg import connection
 from pymongo.errors import DuplicateKeyError
 from scrapy.exceptions import CloseSpider
 
+from avito_russia.postgres import PostgreSQL
 from ..settings import API_KEY, POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, \
     BROKEN_ADS_THRESHOLD
 
-logger = logging.getLogger("DetailedItemsSpider")
-logger.setLevel(level=logging.DEBUG)
 
 class DetailedItemsSpider(scrapy.Spider):
     name = 'detailed'
     allowed_domains = ['m.avito.ru']
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
-    connection: connection
+    db_connection: connection
 
 
     def __init__(self, name=None, **kwargs):
         logging.info(f"DetailedItemsSpider initialized")
-        logger.info("Trying to establish PostgreSQL connection")
-        self.connection = psycopg2.connect(dbname=POSTGRES_DBNAME, user=POSTGRES_USER,
-                                           password=POSTGRES_PASSWORD, host=POSTGRES_HOST)
-        with self.connection.cursor() as cursor:
-            cursor.execute(f"SELECT to_regclass('{POSTGRES_DBNAME}');")
-            is_exists = cursor.fetchone()[0] is not None
-            logger.info(f"Table {POSTGRES_DBNAME} exists {is_exists}")
-            assert is_exists
-        logger.info("PostgreSQL DB connection opened")
+        logging.info("Trying to establish PostgreSQL db_connection")
+        pgsql = PostgreSQL(POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST)
+        assert pgsql.is_table_exists(POSTGRES_DBNAME)
+        logging.info("PostgreSQL DB db_connection opened")
+        self.pgsql = pgsql
 
         self.client = pymongo.MongoClient()
         avito_db = self.client["avito"]
         self.detailed_collection = avito_db["detailed"]
-        logger.info("MongoDB connection opened")
-        logger.info(f"MongoDB server info: {self.client.server_info()}")
+        logging.info("MongoDB db_connection opened")
+        logging.info(f"MongoDB server info: {self.client.server_info()}")
 
         self.parsed_items = 0
         self.broken_ads = 0
@@ -59,7 +53,7 @@ class DetailedItemsSpider(scrapy.Spider):
 
     def next_url(self) -> str:
         if not self.ids:
-            with self.connection.cursor() as cursor:
+            with self.pgsql.cursor() as cursor:
                 cursor.execute(f"SELECT id FROM {POSTGRES_DBNAME} WHERE is_detailed = False ORDER BY random() LIMIT 50")
                 # TODO если программа завершает свою работу до окончания обработки пачки id'шников они
                 # TODO оставшиеся айдишники никогда не будут обработаны
@@ -96,9 +90,9 @@ class DetailedItemsSpider(scrapy.Spider):
             self.broken_ads += 1
             self.broken_ads_in_a_row += 1
             print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row} - DuplicateKeyError")
-            logger.error(dke)
+            logging.error(dke)
 
-        with self.connection.cursor() as cursor:
+        with self.pgsql.db_connection.cursor() as cursor:
             cursor.execute(f"UPDATE {POSTGRES_DBNAME} SET is_detailed = True WHERE id = {item_id}")
             cursor.connection.commit()
         self.parsed_items += 1
@@ -113,11 +107,11 @@ class DetailedItemsSpider(scrapy.Spider):
 
     @staticmethod
     def close(spider, reason):
-        spider.connection.close()
-        is_closed = spider.connection.closed
-        logger.info(f"PostgreSQL connection is closed {bool(is_closed)}")
+        spider.pgsql.db_connection.close()
+        is_closed = spider.pgsql.db_connection.closed
+        logging.info(f"PostgreSQL db_connection is closed {bool(is_closed)}")
         assert is_closed
         spider.client.close()
-        logging.info("MongoDB connection is closed")
+        logging.info("MongoDB db_connection is closed")
         logging.info(f"DetailedItemsSpider closed: {reason}")
         return super().close(spider, reason)
