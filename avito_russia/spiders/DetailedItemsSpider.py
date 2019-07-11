@@ -21,7 +21,6 @@ class DetailedItemsSpider(scrapy.Spider):
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
     db_connection: connection
 
-
     def __init__(self, name=None, **kwargs):
         logging.info(f"DetailedItemsSpider initialized")
         logging.info("Trying to establish PostgreSQL db_connection")
@@ -92,9 +91,6 @@ class DetailedItemsSpider(scrapy.Spider):
             raise CloseSpider("Broken Ads threshold excedeed")
         else:
             yield scrapy.Request(self.next_url())
-
-
-
 
     @staticmethod
     def close(spider, reason):
