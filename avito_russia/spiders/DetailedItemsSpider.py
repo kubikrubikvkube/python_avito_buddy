@@ -51,7 +51,7 @@ class DetailedItemsSpider(scrapy.Spider):
 
     def next_url(self) -> str:
         if not self.ids:
-            self.ids = ids = self.pgsql.select_items(POSTGRES_DBNAME, False, 25)
+            self.ids = ids = self.pgsql.select_items(POSTGRES_DBNAME, False, 10)
             self.pgsql.set_is_detailed(ids, True, POSTGRES_DBNAME)
         return f"https://m.avito.ru/api/13/items/{self.ids.pop(0)}?key={API_KEY}&action=view"
 
