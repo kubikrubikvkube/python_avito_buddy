@@ -34,9 +34,8 @@ class PostgreSQL:
         with self.cursor() as cursor:
             if type(id) is int:
                 cursor.execute(f"UPDATE {table_name} SET is_detailed = {is_detailed} WHERE id = {id}")
-                cursor.connection.commit()
             elif type(id) is list:
                 cursor.execute(f"UPDATE {table_name} SET is_detailed = {is_detailed} WHERE id IN {tuple(id)}")
-                cursor.connection.commit()
             else:
                 raise AttributeError("Invalid 'id' value type")
+            cursor.connection.commit()
