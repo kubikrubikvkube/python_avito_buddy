@@ -1,4 +1,5 @@
 import logging
+from typing import List, Any
 
 from psycopg2 import connect
 from psycopg2._psycopg import cursor
@@ -22,3 +23,20 @@ class PostgreSQL:
 
     def cursor(self) -> cursor:
         return self.db_connection.cursor()
+
+    def select_items(self, table_name, is_detailed: bool, limit: int) -> List[int]:
+        with self.cursor() as cursor:
+            cursor.execute(
+                f"SELECT id FROM {table_name} WHERE is_detailed = {is_detailed} ORDER BY random() LIMIT {limit}")
+            return [raw_id[0] for raw_id in cursor]
+
+    def set_is_detailed(self, id: Any, is_detailed: bool, table_name: str) -> None:
+        with self.cursor() as cursor:
+            if type(id) is int:
+                cursor.execute(f"UPDATE {table_name} SET is_detailed = {is_detailed} WHERE id = {id}")
+                cursor.connection.commit()
+            elif type(id) is list:
+                cursor.execute(f"UPDATE {table_name} SET is_detailed = {is_detailed} WHERE id IN {tuple(id)}")
+                cursor.connection.commit()
+            else:
+                raise AttributeError("Invalid 'id' value type")

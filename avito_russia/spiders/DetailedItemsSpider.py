@@ -21,14 +21,12 @@ class DetailedItemsSpider(scrapy.Spider):
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
     db_connection: connection
 
-
     def __init__(self, name=None, **kwargs):
         logging.info(f"DetailedItemsSpider initialized")
         logging.info("Trying to establish PostgreSQL db_connection")
-        pgsql = PostgreSQL(POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST)
-        assert pgsql.is_table_exists(POSTGRES_DBNAME)
+        self.pgsql = PostgreSQL(POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST)
+        assert self.pgsql.is_table_exists(POSTGRES_DBNAME)
         logging.info("PostgreSQL DB db_connection opened")
-        self.pgsql = pgsql
 
         self.client = pymongo.MongoClient()
         avito_db = self.client["avito"]
@@ -53,16 +51,8 @@ class DetailedItemsSpider(scrapy.Spider):
 
     def next_url(self) -> str:
         if not self.ids:
-            with self.pgsql.cursor() as cursor:
-                cursor.execute(f"SELECT id FROM {POSTGRES_DBNAME} WHERE is_detailed = False ORDER BY random() LIMIT 50")
-                # TODO если программа завершает свою работу до окончания обработки пачки id'шников они
-                # TODO оставшиеся айдишники никогда не будут обработаны
-                for raw_id in cursor:
-                    id = raw_id[0]
-                    self.ids.append(id)
-                for id in self.ids:
-                    cursor.execute(f"UPDATE {POSTGRES_DBNAME} SET is_detailed = True WHERE id = {id}")
-                    cursor.connection.commit()
+            self.ids = ids = self.pgsql.select_items(POSTGRES_DBNAME, False, 10)
+            self.pgsql.set_is_detailed(ids, True, POSTGRES_DBNAME)
         return f"https://m.avito.ru/api/13/items/{self.ids.pop(0)}?key={API_KEY}&action=view"
 
     def parse(self, response):
@@ -101,9 +91,6 @@ class DetailedItemsSpider(scrapy.Spider):
             raise CloseSpider("Broken Ads threshold excedeed")
         else:
             yield scrapy.Request(self.next_url())
-
-
-
 
     @staticmethod
     def close(spider, reason):
