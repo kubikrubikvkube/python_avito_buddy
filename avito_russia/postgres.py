@@ -32,11 +32,15 @@ class PostgreSQL:
 
     def set_is_detailed(self, id: Any, is_detailed: bool, table_name: str) -> None:
         with self.cursor() as cursor:
-            if type(id) is int:
+            if type(id) is int or type(id) is str:
                 cursor.execute(f"UPDATE {table_name} SET is_detailed = {is_detailed} WHERE id = {id}")
-                cursor.connection.commit()
             elif type(id) is list:
                 cursor.execute(f"UPDATE {table_name} SET is_detailed = {is_detailed} WHERE id IN {tuple(id)}")
-                cursor.connection.commit()
             else:
                 raise AttributeError("Invalid 'id' value type")
+            cursor.connection.commit()
+
+    def close(self) -> None:
+        self.db_connection.close()
+        assert self.db_connection.closed
+        logging.info(f"PostgreSQL db_connection is closed")
