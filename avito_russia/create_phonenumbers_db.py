@@ -4,7 +4,6 @@ import csv
 import logging
 import sqlite3
 import urllib
-from multiprocessing.pool import Pool
 from typing import Optional
 from urllib.parse import urlparse, parse_qsl
 
@@ -64,9 +63,9 @@ if __name__ == '__main__':
     pgsql = PostgreSQL(POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST)
     mongo = MongoDB("detailed")
     with open('phone_numbers.csv', mode='w', newline='', encoding='utf-8') as phonenumbers_file:
-        pool = Pool(processes=10)
         items = pgsql.select_items(POSTGRES_DBNAME, is_detailed=True)
-        pb = ProgressBar(total=len(items), prefix='Generating CSV file...', decimals=3, length=50, fill='X', zfill='-')
+        print("\n")
+        pb = ProgressBar(total=len(items), prefix='Generating CSV file...', decimals=2, length=50, fill='X', zfill='-')
         pb_x = 0
         for id in items:
             pb_x += 1
