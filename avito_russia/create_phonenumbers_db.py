@@ -5,36 +5,22 @@ import logging
 import sqlite3
 import urllib
 from multiprocessing.pool import Pool
-from typing import Set, Optional
+from typing import Optional
 from urllib.parse import urlparse, parse_qsl
 
-import psycopg2
-import pymongo
-
-from avito_russia.settings import POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_DBNAME
+from console_progressbar import ProgressBar
+from mongodb import MongoDB
+from postgres import PostgreSQL
+from settings import POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_DBNAME
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s",
     handlers=[
         logging.FileHandler("phonenumbers.log"),
         logging.StreamHandler()
     ])
 
-
-def find_all_is_detailed_items(postgresql_connection) -> Set[int]:
-    """
-    Resolving item status  - it is stored in PostreSQL, but is it already processed and stored in MongoDB?
-    :param postgresql_connection:
-    :return:
-    """
-    with conn.cursor() as cursor:
-        cursor.execute(f"SELECT id FROM {POSTGRES_DBNAME} WHERE is_detailed = True ORDER BY random()")
-        ids = set()
-        for raw_id in cursor:
-            id = raw_id[0]
-            ids.add(id)
-        return ids
 
 
 class NamesDatabase:
@@ -69,55 +55,53 @@ class NamesDatabase:
 
     def __del__(self):
         self.conn.close()
-        logging.info("SQLite3 in-memory names database closed")
-
 
 def strip(string_to_strip: str) -> str:
     return str.strip(string_to_strip)
 
+
+def generate_row(id:int):
+    item = mongo.collection.find_one(id)
+    if item is None or item['adjustParams']['vertical'] == "JOB":
+        # резюме или None
+        pass
+    else:
+        name = None
+        gender = None
+        postfix = None
+        address = None
+        phone_number = None
+        # Row = namedtuple('Row', 'name gender postfix address phone_number')
+        try:
+            name = strip(item['seller']['name'])
+            gender = names_db.resolve_gender(name)
+            postfix = strip(item['seller']['postfix'])
+            address = strip(item['address'])
+            raw_phone = item['contacts']['list'][0]['value']['uri']
+            r = urllib.parse.unquote_plus(raw_phone)
+            q2 = parse_qsl(urlparse(r).query)
+            phone_number = strip(q2[0][1])
+        except (KeyError, IndexError) as e:  # why indexerror? no phone supplied?
+            pass
+        # row = Row(name, gender, postfix, address, phone_number)
+        # print(row)
+
+        return [name, gender, postfix, address, phone_number]
+
 if __name__ == '__main__':
     names_db = NamesDatabase()
-    with psycopg2.connect(dbname=POSTGRES_DBNAME, user=POSTGRES_USER, password=POSTGRES_PASSWORD,
-                          host=POSTGRES_HOST) as conn:
-        logging.info("PostgreSQLSavingPipeline DB connection opened")
-        client = pymongo.MongoClient()
-        avito_db = client["avito"]
-        detailed_collection = avito_db["detailed"]
-        logging.info(f"MongoDB connection info: {client.server_info()}")
-        with open('phone_numbers.csv', mode='w', newline='', encoding='utf-8') as phonenumbers_file:
-            pool = Pool(processes=10)
-            items = find_all_is_detailed_items(conn)
-            for id in items:
-                def process_id(id):
-                    item = detailed_collection.find_one(id)
-                    if item is None or item['adjustParams']['vertical'] == "JOB":
-                        # резюме или None
-                        pass
-                    else:
-                        name = None
-                        gender = None
-                        postfix = None
-                        address = None
-                        phone_number = None
-                        # Row = namedtuple('Row', 'name gender postfix address phone_number')
-                        try:
-                            name = strip(item['seller']['name'])
-                            gender = names_db.resolve_gender(name)
-                            postfix = strip(item['seller']['postfix'])
-                            address = strip(item['address'])
-                            raw_phone = item['contacts']['list'][0]['value']['uri']
-                            r = urllib.parse.unquote_plus(raw_phone)
-                            q2 = parse_qsl(urlparse(r).query)
-                            phone_number = strip(q2[0][1])
-                        except (KeyError, IndexError) as e:  # why indexerror? no phone supplied?
-                            pass
-                        # row = Row(name, gender, postfix, address, phone_number)
-                        # print(row)
-                        writer = csv.writer(phonenumbers_file, delimiter=',', quotechar='"',
-                                            quoting=csv.QUOTE_MINIMAL)
-                        writer.writerow([name, gender, postfix, address, phone_number])
+    pgsql = PostgreSQL(POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST)
+    mongo = MongoDB("detailed")
+    with open('phone_numbers.csv', mode='w', newline='', encoding='utf-8') as phonenumbers_file:
+        writer = csv.writer(phonenumbers_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        items = pgsql.select_items(POSTGRES_DBNAME, is_detailed=True)
+        print("\n")
+        pb = ProgressBar(total=len(items), prefix='Generating CSV file...', decimals=2, length=50, fill='X', zfill='-')
+        pb_x = 0
+        for id in items:
+            pb_x += 1
+            pb.print_progress_bar(pb_x)
+            row = generate_row(id)
+            if row:
+                writer.writerow(row)
 
-                pool.apply_async(process_id(id))
-
-
-        client.close()

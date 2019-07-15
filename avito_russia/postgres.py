@@ -24,10 +24,9 @@ class PostgreSQL:
     def cursor(self) -> cursor:
         return self.db_connection.cursor()
 
-    def select_items(self, table_name, is_detailed: bool, limit: int) -> List[int]:
+    def select_items(self, table_name, is_detailed: bool, limit: int = "NULL") -> List[int]:
         with self.cursor() as cursor:
-            cursor.execute(
-                f"SELECT id FROM {table_name} WHERE is_detailed = {is_detailed} ORDER BY random() LIMIT {limit}")
+            cursor.execute(f"SELECT id FROM {table_name} WHERE is_detailed = {is_detailed} ORDER BY random() LIMIT {limit}")
             return [raw_id[0] for raw_id in cursor]
 
     def set_is_detailed(self, id: Any, is_detailed: bool, table_name: str) -> None:
