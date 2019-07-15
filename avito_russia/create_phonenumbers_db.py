@@ -4,6 +4,7 @@ import csv
 import logging
 import sqlite3
 import urllib
+from multiprocessing.pool import Pool
 from typing import Optional
 from urllib.parse import urlparse, parse_qsl
 
@@ -13,7 +14,7 @@ from postgres import PostgreSQL
 from settings import POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_DBNAME
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s",
     handlers=[
         logging.FileHandler("phonenumbers.log"),
@@ -58,11 +59,41 @@ class NamesDatabase:
 def strip(string_to_strip: str) -> str:
     return str.strip(string_to_strip)
 
+
+def generate_row(id:int):
+    item = mongo.collection.find_one(id)
+    if item is None or item['adjustParams']['vertical'] == "JOB":
+        # резюме или None
+        pass
+    else:
+        name = None
+        gender = None
+        postfix = None
+        address = None
+        phone_number = None
+        # Row = namedtuple('Row', 'name gender postfix address phone_number')
+        try:
+            name = strip(item['seller']['name'])
+            gender = names_db.resolve_gender(name)
+            postfix = strip(item['seller']['postfix'])
+            address = strip(item['address'])
+            raw_phone = item['contacts']['list'][0]['value']['uri']
+            r = urllib.parse.unquote_plus(raw_phone)
+            q2 = parse_qsl(urlparse(r).query)
+            phone_number = strip(q2[0][1])
+        except (KeyError, IndexError) as e:  # why indexerror? no phone supplied?
+            pass
+        # row = Row(name, gender, postfix, address, phone_number)
+        # print(row)
+
+        return [name, gender, postfix, address, phone_number]
+
 if __name__ == '__main__':
     names_db = NamesDatabase()
     pgsql = PostgreSQL(POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST)
     mongo = MongoDB("detailed")
     with open('phone_numbers.csv', mode='w', newline='', encoding='utf-8') as phonenumbers_file:
+        writer = csv.writer(phonenumbers_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         items = pgsql.select_items(POSTGRES_DBNAME, is_detailed=True)
         print("\n")
         pb = ProgressBar(total=len(items), prefix='Generating CSV file...', decimals=2, length=50, fill='X', zfill='-')
@@ -70,29 +101,7 @@ if __name__ == '__main__':
         for id in items:
             pb_x += 1
             pb.print_progress_bar(pb_x)
-            item = mongo.collection.find_one(id)
-            if item is None or item['adjustParams']['vertical'] == "JOB":
-                # резюме или None
-                pass
-            else:
-                name = None
-                gender = None
-                postfix = None
-                address = None
-                phone_number = None
-                # Row = namedtuple('Row', 'name gender postfix address phone_number')
-                try:
-                    name = strip(item['seller']['name'])
-                    gender = names_db.resolve_gender(name)
-                    postfix = strip(item['seller']['postfix'])
-                    address = strip(item['address'])
-                    raw_phone = item['contacts']['list'][0]['value']['uri']
-                    r = urllib.parse.unquote_plus(raw_phone)
-                    q2 = parse_qsl(urlparse(r).query)
-                    phone_number = strip(q2[0][1])
-                except (KeyError, IndexError) as e:  # why indexerror? no phone supplied?
-                    pass
-                # row = Row(name, gender, postfix, address, phone_number)
-                # print(row)
-                writer = csv.writer(phonenumbers_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                writer.writerow([name, gender, postfix, address, phone_number])
+            row = generate_row(id)
+            if row:
+                writer.writerow(row)
+
