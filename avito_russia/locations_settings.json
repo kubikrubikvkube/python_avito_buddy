@@ -1,32 +1,32 @@
 {
   "SAINT-PETERSBURG": {
     "id": 107621,
-    "collectionName": "spb",
+    "detailedCollectionName": "spb",
     "recentCollectionName": "spb_recent"
   },
   "EKATERINBURG": {
     "id": 654070,
-    "collectionName": "ekb",
+    "detailedCollectionName": "ekb",
     "recentCollectionName": "ekb_recent"
   },
   "RUSSIA": {
     "id": 621540,
-    "collectionName": "rus",
+    "detailedCollectionName": "rus",
     "recentCollectionName": "rus_recent"
   },
   "MOSCOW": {
     "id": 637640,
-    "collectionName": "msk",
+    "detailedCollectionName": "msk",
     "recentCollectionName": "msk_recent"
   },
   "NOVOSIBIRSKAYA_OBLAST": {
     "id": 641470,
-    "collectionName": "nso",
+    "detailedCollectionName": "nso",
     "recentCollectionName": "nso_recent"
   },
   "NOVOSIBIRSK": {
     "id": 641780,
-    "collectionName": "nsk",
+    "detailedCollectionName": "nsk",
     "recentCollectionName": "nsk_recent"
   }
 }

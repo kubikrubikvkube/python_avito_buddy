@@ -6,7 +6,7 @@ from typing import Dict, Optional
 @dataclass
 class Location:
     id: int
-    collectionName: str
+    detailedCollectionName: str
     recentCollectionName: str
 
 
@@ -23,5 +23,5 @@ class LocationManager:
             raise AttributeError("This location is not present in locations_settings.json. Check location name.")
 
         return Location(resolved_location['id'],
-                        resolved_location['collectionName'],
+                        resolved_location['detailedCollectionName'],
                         resolved_location['recentCollectionName'])

@@ -10,22 +10,16 @@ import scrapy
 from scrapy.exceptions import NotSupported, CloseSpider
 
 from avito_russia.locations import LocationManager
-from ..items import AvitoSimpleAd
+from avito_russia.mongodb import MongoDB
 from ..settings import API_KEY
 
 logger = logging.getLogger("RecentSpider")
 logger.setLevel(level=logging.INFO)
 
+
 class RecentSpider(scrapy.Spider):
     name = 'recent'
     allowed_domains = ['m.avito.ru']
-
-
-    custom_settings = {
-        'ITEM_PIPELINES': {
-            'avito_russia.pipelines.PostgreSQLSavingPipeline': 0,
-        }
-    }
 
     def __init__(self, *args, **kwargs):
         super().__init__()
@@ -42,8 +36,7 @@ class RecentSpider(scrapy.Spider):
             location_id=location.id,
             display='list',
             limit=99)
-
-
+        self.mongodb = MongoDB(location.recentCollectionName)
 
     def preserve(self, ad: JSONObject) -> None:
         logging.debug(ad)
@@ -60,6 +53,8 @@ class RecentSpider(scrapy.Spider):
         else:
             self.last_stamp = timestamp
             self.page = 1
+
+        self.mongodb.insert_one(ad)
 
     def next_url(self) -> str:
         if self.should_be_closed:
@@ -81,7 +76,6 @@ class RecentSpider(scrapy.Spider):
 
         for item in items:
             self.preserve(item)
-            yield AvitoSimpleAd(item['value'])
 
         if items:
             yield scrapy.Request(self.next_url())
