@@ -1,0 +1,32 @@
+{
+  "SAINT-PETERSBURG": {
+    "id": 107621,
+    "collectionName": "spb",
+    "recentCollectionName": "spb_recent"
+  },
+  "EKATERINBURG": {
+    "id": 654070,
+    "collectionName": "ekb",
+    "recentCollectionName": "ekb_recent"
+  },
+  "RUSSIA": {
+    "id": 621540,
+    "collectionName": "rus",
+    "recentCollectionName": "rus_recent"
+  },
+  "MOSCOW": {
+    "id": 637640,
+    "collectionName": "msk",
+    "recentCollectionName": "msk_recent"
+  },
+  "NOVOSIBIRSKAYA_OBLAST": {
+    "id": 641470,
+    "collectionName": "nso",
+    "recentCollectionName": "nso_recent"
+  },
+  "NOVOSIBIRSK": {
+    "id": 641780,
+    "collectionName": "nsk",
+    "recentCollectionName": "nsk_recent"
+  }
+}

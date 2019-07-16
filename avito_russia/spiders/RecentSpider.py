@@ -9,6 +9,7 @@ from json.decoder import JSONObject
 import scrapy
 from scrapy.exceptions import NotSupported, CloseSpider
 
+from avito_russia.locations import LocationManager
 from ..items import AvitoSimpleAd
 from ..settings import API_KEY
 
@@ -18,12 +19,7 @@ logger.setLevel(level=logging.INFO)
 class RecentSpider(scrapy.Spider):
     name = 'recent'
     allowed_domains = ['m.avito.ru']
-    url_pattern = 'https://m.avito.ru/api/9/items?key={key}&sort={sort}&locationId={location_id}&page=__page__&lastStamp=__timestamp__&display={display}&limit={limit}'.format(
-        key=API_KEY,
-        sort='date',
-        location_id='107621',
-        display='list',
-        limit=99)
+
 
     custom_settings = {
         'ITEM_PIPELINES': {
@@ -31,13 +27,23 @@ class RecentSpider(scrapy.Spider):
         }
     }
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__()
         delta_timestamp = datetime.now() - timedelta(minutes=3)
         self.last_stamp = int(datetime.timestamp(delta_timestamp))
         self.page = 1
         self.should_be_closed = False
         self.close_reason = None
+        location_name = kwargs.get("location_name")
+        self.location = location = LocationManager().get_location(location_name)
+        self.url_pattern = 'https://m.avito.ru/api/9/items?key={key}&sort={sort}&locationId={location_id}&page=__page__&lastStamp=__timestamp__&display={display}&limit={limit}'.format(
+            key=API_KEY,
+            sort='date',
+            location_id=location.id,
+            display='list',
+            limit=99)
+
+
 
     def preserve(self, ad: JSONObject) -> None:
         logging.debug(ad)
