@@ -11,7 +11,7 @@ from scrapy.exceptions import NotSupported, CloseSpider
 
 from avito_russia.locations import LocationManager
 from avito_russia.mongodb import MongoDB
-from ..settings import API_KEY
+from ..settings import API_KEY, BROKEN_ADS_THRESHOLD
 
 logger = logging.getLogger("RecentSpider")
 logger.setLevel(level=logging.INFO)
@@ -28,6 +28,8 @@ class RecentSpider(scrapy.Spider):
         self.page = 1
         self.should_be_closed = False
         self.close_reason = None
+        self.broken_ads = 0
+        self.broken_ads_in_a_row = 0
         location_name = kwargs.get("location_name")
         self.location = location = LocationManager().get_location(location_name)
         self.url_pattern = 'https://m.avito.ru/api/9/items?key={key}&sort={sort}&locationId={location_id}&page=__page__&lastStamp=__timestamp__&display={display}&limit={limit}'.format(
@@ -36,7 +38,8 @@ class RecentSpider(scrapy.Spider):
             location_id=location.id,
             display='list',
             limit=99)
-        self.mongodb = MongoDB(location.recentCollectionName)
+        self.recentCollection = MongoDB(location.recentCollectionName)
+        self.detailedCollection = MongoDB(location.detailedCollectionName)
 
     def preserve(self, ad: JSONObject) -> None:
         logging.debug(ad)
@@ -54,7 +57,16 @@ class RecentSpider(scrapy.Spider):
             self.last_stamp = timestamp
             self.page = 1
 
-        self.mongodb.insert_one(ad)
+        if self.detailedCollection.collection.find_one("{ 'id': {id} }".format(id=id)):
+            self.broken_ads += 1
+            self.broken_ads_in_a_row += 1
+        else:
+            self.broken_ads_in_a_row = 0
+
+        if self.broken_ads_in_a_row > BROKEN_ADS_THRESHOLD:
+            raise CloseSpider("Broken Ads threshold excedeed")
+
+        self.recentCollection.insert_one(ad)
 
     def next_url(self) -> str:
         if self.should_be_closed:
