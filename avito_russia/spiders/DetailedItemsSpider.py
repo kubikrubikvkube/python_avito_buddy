@@ -6,12 +6,11 @@ import logging
 import scrapy
 from psycopg2._psycopg import connection
 from pymongo.errors import DuplicateKeyError
-from scrapy.exceptions import CloseSpider
+from scrapy.exceptions import CloseSpider, NotSupported
 
+from avito_russia.locations import LocationManager
 from avito_russia.mongodb import MongoDB
-from avito_russia.postgres import PostgreSQL
-from ..settings import API_KEY, POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, \
-    BROKEN_ADS_THRESHOLD
+from ..settings import API_KEY, BROKEN_ADS_THRESHOLD
 
 
 class DetailedItemsSpider(scrapy.Spider):
@@ -22,15 +21,13 @@ class DetailedItemsSpider(scrapy.Spider):
 
     def __init__(self, name=None, **kwargs):
         logging.info(f"DetailedItemsSpider initialized")
-        logging.info("Trying to establish PostgreSQL db_connection")
-        self.pgsql = PostgreSQL(POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST)
-        assert self.pgsql.is_table_exists(POSTGRES_DBNAME)
-        logging.info("PostgreSQL DB db_connection opened")
-        self.mongodb = MongoDB("detailed")
+        location_name = kwargs.get("location_name")
+        self.location = location = LocationManager().get_location(location_name)
+        self.detailedCollection = MongoDB(location.detailedCollectionName)
+        self.recentCollection = MongoDB(location.recentCollectionName)
         self.parsed_items = 0
         self.broken_ads = 0
         self.broken_ads_in_a_row = 0
-        self.ids = []
         super().__init__(name, **kwargs)
 
     @classmethod
@@ -43,17 +40,23 @@ class DetailedItemsSpider(scrapy.Spider):
         return super().start_requests()
 
     def next_url(self) -> str:
-        if not self.ids:
-            self.ids = ids = self.pgsql.select_items(POSTGRES_DBNAME, False, 10)
-            self.pgsql.set_is_detailed(ids, True, POSTGRES_DBNAME)
-        return f"https://m.avito.ru/api/13/items/{self.ids.pop(0)}?key={API_KEY}&action=view"
+        document = self.recentCollection.collection.find_one_and_delete(filter={})
+        if document['type'] == 'item' or document['type'] == 'xlItem':
+            id = document['value']['id']
+        elif document['type'] == 'vip':
+            id = document['value']['list'][0]['value']['id']
+        else:
+            raise NotSupported()
+
+        id = document['value']['id']
+        return f"https://m.avito.ru/api/13/items/{id}?key={API_KEY}&action=view"
 
     def parse(self, response):
         json_response = json.loads(response.body_as_unicode())
         self.logger.debug(f'Parsing response {json_response}')
         try:
             if response.status == 200:
-                self.mongodb.insert_one(json_response)
+                self.detailedCollection.insert_one(json_response)
                 self.broken_ads_in_a_row = 0
             else:
                 self.broken_ads += 1
@@ -74,7 +77,5 @@ class DetailedItemsSpider(scrapy.Spider):
 
     @staticmethod
     def close(spider, reason):
-        spider.pgsql.close()
-        spider.mongodb.close()
         logging.info(f"DetailedItemsSpider closed: {reason}")
         return super().close(spider, reason)

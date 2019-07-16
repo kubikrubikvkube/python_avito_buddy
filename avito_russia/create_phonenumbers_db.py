@@ -4,7 +4,6 @@ import csv
 import logging
 import sqlite3
 import urllib
-from multiprocessing.pool import Pool
 from typing import Optional
 from urllib.parse import urlparse, parse_qsl
 
@@ -22,11 +21,11 @@ logging.basicConfig(
     ])
 
 
-
 class NamesDatabase:
     """
     Russian names database
     """
+
     def __init__(self) -> None:
         self.conn = sqlite3.connect(':memory:')
         logging.info("SQLite3 in-memory names database initialized")
@@ -56,11 +55,12 @@ class NamesDatabase:
     def __del__(self):
         self.conn.close()
 
+
 def strip(string_to_strip: str) -> str:
     return str.strip(string_to_strip)
 
 
-def generate_row(id:int):
+def generate_row(id: int):
     item = mongo.collection.find_one(id)
     if item is None or item['adjustParams']['vertical'] == "JOB":
         # резюме или None
@@ -88,6 +88,7 @@ def generate_row(id:int):
 
         return [name, gender, postfix, address, phone_number]
 
+
 if __name__ == '__main__':
     names_db = NamesDatabase()
     pgsql = PostgreSQL(POSTGRES_DBNAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST)
@@ -104,4 +105,3 @@ if __name__ == '__main__':
             row = generate_row(id)
             if row:
                 writer.writerow(row)
-
