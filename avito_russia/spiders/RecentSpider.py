@@ -46,10 +46,13 @@ class RecentSpider(scrapy.Spider):
 
         if ad['type'] == 'item' or ad['type'] == 'xlItem':
             timestamp = ad['value']['time']
+            id = ad['value']['id']
         elif ad['type'] == 'vip':
             timestamp = ad['value']['list'][0]['value']['time']
+            id = ad['value']['list'][0]['value']['id']
         else:
             raise NotSupported()
+
 
         if self.last_stamp == timestamp:
             self.page += 1
@@ -57,16 +60,15 @@ class RecentSpider(scrapy.Spider):
             self.last_stamp = timestamp
             self.page = 1
 
-        if self.detailedCollection.collection.find_one("{ 'id': {id} }".format(id=id)):
+        if self.recentCollection.collection.find_one({'value.id': id}):
             self.broken_ads += 1
             self.broken_ads_in_a_row += 1
         else:
             self.broken_ads_in_a_row = 0
+            self.recentCollection.collection.insert_one(ad)
 
         if self.broken_ads_in_a_row > BROKEN_ADS_THRESHOLD:
             raise CloseSpider("Broken Ads threshold excedeed")
-
-        self.recentCollection.insert_one(ad)
 
     def next_url(self) -> str:
         if self.should_be_closed:
