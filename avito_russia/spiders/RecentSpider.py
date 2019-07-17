@@ -9,8 +9,8 @@ from json.decoder import JSONObject
 import scrapy
 from scrapy.exceptions import NotSupported, CloseSpider
 
-from avito_russia.locations import LocationManager
 from avito_russia.mongodb import MongoDB
+from locations import LocationManager
 from ..settings import API_KEY, BROKEN_ADS_THRESHOLD
 
 logger = logging.getLogger("RecentSpider")

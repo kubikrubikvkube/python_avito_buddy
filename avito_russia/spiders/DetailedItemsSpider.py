@@ -8,8 +8,8 @@ from psycopg2._psycopg import connection
 from pymongo.errors import DuplicateKeyError
 from scrapy.exceptions import CloseSpider, NotSupported
 
-from avito_russia.locations import LocationManager
 from avito_russia.mongodb import MongoDB
+from locations import LocationManager
 from ..settings import API_KEY, BROKEN_ADS_THRESHOLD
 
 
