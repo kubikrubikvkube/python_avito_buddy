@@ -18,4 +18,4 @@ if __name__ == '__main__':
         process.crawl(recent_spider, location_name=location)
         detailed_spider = DetailedItemsSpider(location_name=location)
         process.crawl(detailed_spider, location_name=location)
-        process.start()
+    process.start()
