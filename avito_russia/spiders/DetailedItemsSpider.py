@@ -40,7 +40,8 @@ class DetailedItemsSpider(scrapy.Spider):
         return super().start_requests()
 
     def next_url(self) -> str:
-        document = self.recentCollection.collection.find_one_and_delete(filter={})
+        document = self.recentCollection.collection.find_one_and_update({"isDetailed": {"$ne": True}},
+                                                                        {"$set": {"isDetailed": True}})
         if document['type'] == 'item' or document['type'] == 'xlItem':
             id = document['value']['id']
         elif document['type'] == 'vip':
@@ -48,7 +49,6 @@ class DetailedItemsSpider(scrapy.Spider):
         else:
             raise NotSupported()
 
-        id = document['value']['id']
         return f"https://m.avito.ru/api/13/items/{id}?key={API_KEY}&action=view"
 
     def parse(self, response):
