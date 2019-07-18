@@ -2,11 +2,22 @@
   "EKATERINBURG": {
     "id": 654070,
     "detailedCollectionName": "ekb",
-    "recentCollectionName": "ekb_recent"
+    "recentCollectionName": "ekb_recent",
+    "isCity": true,
+    "isRegion": false
   },
   "MOSCOW": {
     "id": 637640,
     "detailedCollectionName": "msk",
-    "recentCollectionName": "msk_recent"
+    "recentCollectionName": "msk_recent",
+    "isCity": true,
+    "isRegion": false
+  },
+  "SAINT-PETERSBURG": {
+    "id": 107621,
+    "detailedCollectionName": "spb",
+    "recentCollectionName": "spb_recent",
+    "isCity": true,
+    "isRegion": false
   }
 }

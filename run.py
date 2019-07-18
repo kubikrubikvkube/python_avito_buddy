@@ -10,6 +10,9 @@ from avito_russia.spiders.RecentSpider import RecentSpider
 from locations import LocationManager
 
 if __name__ == '__main__':
+    logger = logging.getLogger("RecentSpider")
+    logger.setLevel(level=logging.INFO)
+
     process = CrawlerProcess(get_project_settings())
     logging.info('CrawlerProcess initialized')
     locations = LocationManager().locations_list.keys()

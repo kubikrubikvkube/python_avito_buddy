@@ -69,7 +69,7 @@ class DetailedItemsSpider(scrapy.Spider):
             print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row} - DuplicateKeyError")
 
         self.parsed_items += 1
-        print(f"Parsed items {self.parsed_items}")
+        self.logger.info(f"Parsed items {self.parsed_items}")
         if self.broken_ads_in_a_row > BROKEN_ADS_THRESHOLD:
             raise CloseSpider("Broken Ads threshold excedeed")
         else:
