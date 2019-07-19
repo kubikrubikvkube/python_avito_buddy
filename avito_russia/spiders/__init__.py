@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from json.decoder import JSONObject
 
 import scrapy
-from pymongo.errors import DuplicateKeyError
 from scrapy.exceptions import NotSupported, CloseSpider
 
 from locations import LocationManager
@@ -59,29 +58,20 @@ class DetailedItemsSpider(AvitoSpider):
     def parse(self, response):
         json_response = json.loads(response.body_as_unicode())
         self.logger.debug(f'Parsing response {json_response}')
-        try:
-            if response.status == 200:
-                self.detailed_collection.insert_one(json_response)
-                self.reset_broken_ads_in_a_row()
-            else:
-                self.increment_broken_ads()
-                self.logger.info(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
-        except DuplicateKeyError as dke:
-            logging.warning(dke)
+        if response.status == 200:
+            self.reset_broken_ads_in_a_row()
+            self.detailed_collection.insert_one(json_response)
+        else:
             self.increment_broken_ads()
-            self.logger.info(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row} - DuplicateKeyError")
+            self.logger.info(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
 
         self.parsed_items += 1
         self.logger.info(f"Parsed items {self.parsed_items} for {self.location.detailedCollectionName}")
+
         if self.broken_ads_in_a_row > BROKEN_ADS_THRESHOLD:
             raise CloseSpider("Broken Ads threshold excedeed")
         else:
             yield scrapy.Request(self.next_url())
-
-    @staticmethod
-    def close(spider, reason):
-        logging.info(f"DetailedItemsSpider closed: {reason}")
-        return super().close(spider, reason)
 
 
 class RecentSpider(AvitoSpider):
