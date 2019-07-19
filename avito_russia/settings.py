@@ -89,7 +89,7 @@ AUTOTHROTTLE_ENABLED = True
 # each remote server
 AUTOTHROTTLE_TARGET_CONCURRENCY = 3
 # Enable showing throttling stats for every response received:
-AUTOTHROTTLE_DEBUG = True
+AUTOTHROTTLE_DEBUG = False
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
@@ -135,7 +135,7 @@ POSTGRES_PASSWORD = "postgres"
 POSTGRES_DBNAME = "avito"
 POSTGRES_PHONENUMBERS_TABLENAME = "phonenumbers"
 
-API_KEY = "<...>"
+API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
 DROPPED_ITEMS_THRESHOLD = 99
 BROKEN_ADS_THRESHOLD = 30
 
