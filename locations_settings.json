@@ -1,38 +1,23 @@
 {
-  "Ekaterinburg": {
+  "EKATERINBURG": {
     "id": 654070,
     "detailedCollectionName": "ekb",
-    "recentCollectionName": "ekb_recent"
+    "recentCollectionName": "ekb_recent",
+    "isCity": true,
+    "isRegion": false
   },
-  "Sverdlovskaya_Oblast": {
-    "id": 653700,
-    "detailedCollectionName": "sverdlovskaya_oblast",
-    "recentCollectionName": "sverdlovskaya_oblast_recent",
-    "capitalCity": "Ekaterinburg"
-  },
-  "Moscow": {
+  "MOSCOW": {
     "id": 637640,
     "detailedCollectionName": "msk",
-    "recentCollectionName": "msk_recent"
+    "recentCollectionName": "msk_recent",
+    "isCity": true,
+    "isRegion": false
   },
-  "Moscovskaya_Oblast": {
-    "id": 637680,
-    "detailedCollectionName": "moscovskaya_oblast",
-    "recentCollectionName": "moscovskaya_oblast_recent",
-    "capitalCity": "Moscow"
-  },
-  "Saint-Petersburg": {
+  "SAINT-PETERSBURG": {
     "id": 107621,
     "detailedCollectionName": "spb",
-    "recentCollectionName": "spb_recent"
-  },
-  "Leningradskaya_Oblast": {
-    "id": 636370,
-    "detailedCollectionName": "leningradskaya_oblast",
-    "recentCollectionName": "leningradskaya_oblast_recent",
-    "capitalCity": "Saint-Petersburg"
+    "recentCollectionName": "spb_recent",
+    "isCity": true,
+    "isRegion": false
   }
 }
-
-
-
