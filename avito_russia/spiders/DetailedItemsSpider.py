@@ -61,15 +61,15 @@ class DetailedItemsSpider(scrapy.Spider):
             else:
                 self.broken_ads += 1
                 self.broken_ads_in_a_row += 1
-                print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
+                self.logger.info(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
         except DuplicateKeyError as dke:
             logging.warning(dke)
             self.broken_ads += 1
             self.broken_ads_in_a_row += 1
-            print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row} - DuplicateKeyError")
+            self.logger.info(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row} - DuplicateKeyError")
 
         self.parsed_items += 1
-        self.logger.info(f"Parsed items {self.parsed_items}")
+        self.logger.info(f"Parsed items {self.parsed_items} for {self.location.detailedCollectionName}")
         if self.broken_ads_in_a_row > BROKEN_ADS_THRESHOLD:
             raise CloseSpider("Broken Ads threshold excedeed")
         else:
