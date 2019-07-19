@@ -8,8 +8,8 @@ from psycopg2._psycopg import connection
 from pymongo.errors import DuplicateKeyError
 from scrapy.exceptions import CloseSpider, NotSupported
 
-from avito_russia.locations import LocationManager
 from avito_russia.mongodb import MongoDB
+from locations import LocationManager
 from ..settings import API_KEY, BROKEN_ADS_THRESHOLD
 
 
@@ -61,15 +61,15 @@ class DetailedItemsSpider(scrapy.Spider):
             else:
                 self.broken_ads += 1
                 self.broken_ads_in_a_row += 1
-                print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
+                self.logger.info(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
         except DuplicateKeyError as dke:
             logging.warning(dke)
             self.broken_ads += 1
             self.broken_ads_in_a_row += 1
-            print(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row} - DuplicateKeyError")
+            self.logger.info(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row} - DuplicateKeyError")
 
         self.parsed_items += 1
-        print(f"Parsed items {self.parsed_items}")
+        self.logger.info(f"Parsed items {self.parsed_items} for {self.location.detailedCollectionName}")
         if self.broken_ads_in_a_row > BROKEN_ADS_THRESHOLD:
             raise CloseSpider("Broken Ads threshold excedeed")
         else:

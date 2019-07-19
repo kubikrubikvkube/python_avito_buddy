@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import json
 from dataclasses import dataclass
 from typing import Dict, Optional
@@ -8,6 +10,8 @@ class Location:
     id: int
     detailedCollectionName: str
     recentCollectionName: str
+    isCity: bool
+    isRegion: bool
 
 
 class LocationManager:
@@ -18,10 +22,13 @@ class LocationManager:
             self.locations_list = json.loads(locations_json.read(), encoding="UTF-8")
 
     def get_location(self, location_name: str) -> Location:
-        resolved_location: Optional[dict] = self.locations_list.get(location_name)
-        if resolved_location is None:
+        location: Optional[dict] = self.locations_list.get(location_name)
+        if location is None:
             raise AttributeError("This location is not present in locations_settings.json. Check location name.")
 
-        return Location(resolved_location['id'],
-                        resolved_location['detailedCollectionName'],
-                        resolved_location['recentCollectionName'])
+        return Location(location['id'],
+                        location['detailedCollectionName'],
+                        location['recentCollectionName'],
+                        location['isCity'],
+                        location['isRegion']
+                        )

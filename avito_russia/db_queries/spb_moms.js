@@ -1,1 +1,0 @@
-db.detailed.find({   locationId:653240,   userType:"private",   "seller.postfix":"Частное лицо",   "parameters.flat.0.description":{      $in:[         "Детская одежда и обувь",         "Товары для детей и игрушки"      ]   },   "contacts.list.value.uri":{      $exists:true   }})
