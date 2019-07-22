@@ -8,6 +8,7 @@ from json.decoder import JSONObject
 import scrapy
 from scrapy.exceptions import NotSupported, CloseSpider
 
+from items import DetailedItem
 from locations import LocationManager
 from mongodb import MongoDB
 from settings import API_KEY, BROKEN_ADS_THRESHOLD
@@ -60,7 +61,7 @@ class DetailedItemsSpider(AvitoSpider):
         self.logger.debug(f'Parsing response {json_response}')
         if response.status == 200:
             self.reset_broken_ads_in_a_row()
-            self.detailed_collection.insert_one(json_response)
+            yield DetailedItem(json_response)
         else:
             self.increment_broken_ads()
             self.logger.info(f"Broken {self.broken_ads},in a row {self.broken_ads_in_a_row}")
@@ -71,6 +72,7 @@ class DetailedItemsSpider(AvitoSpider):
         if self.broken_ads_in_a_row > BROKEN_ADS_THRESHOLD:
             raise CloseSpider("Broken Ads threshold excedeed")
         else:
+
             yield scrapy.Request(self.next_url())
 
 

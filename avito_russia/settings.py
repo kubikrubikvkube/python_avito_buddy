@@ -72,11 +72,9 @@ SPIDER_MIDDLEWARES = {
 # Configure item pipelines
 
 #
-# ITEM_PIPELINES = {
-#    'avito_russia.pipelines.SQLiteSavingPipeline': 0,
-#    'avito_russia.pipelines.PostgreSQLSavingPipeline': 1,
-#    'avito_russia.pipelines.MongoDBSavingPipeline': 2,
-# }
+ITEM_PIPELINES = {
+    'avito_russia.pipelines.DetailedItemSaverPipeline': 0,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
