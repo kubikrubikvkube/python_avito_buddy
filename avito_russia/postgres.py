@@ -3,8 +3,10 @@ from typing import List, Any
 
 from psycopg2 import connect
 from psycopg2._psycopg import cursor
+from scrapy.utils.decorators import deprecated
 
 
+@deprecated
 class PostgreSQL:
     def __init__(self, dbname, user, password, host) -> None:
         logging.info(f"Creating PostgreSQL object with parameters {dbname} {user} ... {host} ")

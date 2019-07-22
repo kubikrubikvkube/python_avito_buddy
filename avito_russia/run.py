@@ -5,9 +5,8 @@ import logging
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-from avito_russia.spiders.DetailedItemsSpider import DetailedItemsSpider
-from avito_russia.spiders.RecentSpider import RecentSpider
 from locations import LocationManager
+from spiders import RecentSpider, DetailedItemsSpider
 
 if __name__ == '__main__':
     logger = logging.getLogger("RecentSpider")

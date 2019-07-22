@@ -1,36 +1,40 @@
-from __future__ import absolute_import
-
-import scrapy
+from scrapy import Item, Field
 
 
-# -*- coding: utf-8 -*-
-# Define here the models for your scraped items
-#
-# See documentation in:
-# https://doc.scrapy.org/en/latest/topics/items.html
-
-
-class AvitoSimpleAd(scrapy.Item):
-    type = scrapy.Field()
-    id = scrapy.Field()
-    userId = scrapy.Field()
-    category = scrapy.Field()
-    location = scrapy.Field()
-    coords = scrapy.Field()
-    time = scrapy.Field()
-    title = scrapy.Field()
-    userType = scrapy.Field()
-    images = scrapy.Field()
-    services = scrapy.Field()
-    price = scrapy.Field()
-    uri = scrapy.Field()
-    uri_mweb = scrapy.Field()
-    shop = scrapy.Field()
-    background = scrapy.Field()
-    isVerified = scrapy.Field()
-    isFavorite = scrapy.Field()
-    delivery = scrapy.Field()
-    description = scrapy.Field()
-    callAction = scrapy.Field()
-    imageList = scrapy.Field()
-    list = scrapy.Field()
+class DetailedItem(Item):
+    id = Field()
+    categoryId = Field()
+    locationId = Field()
+    metroId = Field()
+    metroType = Field()
+    sharing = Field()
+    coords = Field()
+    address = Field()
+    title = Field()
+    userType = Field()
+    time = Field()
+    description = Field()
+    parameters = Field()
+    images = Field()
+    price = Field()
+    seller = Field()
+    shopId = Field()
+    shopType = Field()
+    stats = Field()
+    contacts = Field()
+    needToCheckCreditInfo = Field()
+    firebaseParams = Field()
+    adjustParams = Field()
+    deliveryC2C = Field()
+    video = Field()
+    titleGenerated = Field()
+    autodeal = Field()
+    directionId = Field()
+    autoteka = Field()
+    anonymousNumber = Field()
+    shortTermRent = Field()
+    needToCheckModelSpecs = Field()
+    districtId = Field()
+    autotekaTeaser = Field()
+    disclaimer = Field()
+    gender = Field()
