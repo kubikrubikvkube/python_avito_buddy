@@ -34,3 +34,7 @@ class DetailedItem(Item):
     anonymousNumber = Field()
     shortTermRent = Field()
     needToCheckModelSpecs = Field()
+    districtId = Field()
+    autotekaTeaser = Field()
+    disclaimer = Field()
+    gender = Field()
