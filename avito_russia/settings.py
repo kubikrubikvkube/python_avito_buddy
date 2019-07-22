@@ -85,7 +85,7 @@ AUTOTHROTTLE_ENABLED = True
 # AUTOTHROTTLE_MAX_DELAY = 15
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 3
+AUTOTHROTTLE_TARGET_CONCURRENCY = 5
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = False
 
@@ -107,31 +107,25 @@ FEED_EXPORT_ENCODING = 'utf-8'
 # LOG_FILE = 'avito_russia.log'
 
 # We want redirect all stdout output to log file
-LOG_STDOUT = False
+LOG_STDOUT = True
 
 # Enable memory debugging
-MEMDEBUG_ENABLED = True
+MEMDEBUG_ENABLED = False
 
 # For the sake of stability we need to implement request retry logic
 RETRY_ENABLED = True
-RETRY_TIMES = 100
+RETRY_TIMES = 50
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]
 RETRY_PRIORITY_ADJUST = -1
 
 # Implicitly set statistics collection class
 STATS_CLASS = 'scrapy.statscollectors.MemoryStatsCollector'
-STATS_DUMP = True
+STATS_DUMP = False
 
 # For debug purposes telnet console should be enabled
 TELNETCONSOLE_ENABLED = False
 TELNETCONSOLE_USERNAME = 'scrapy'
 TELNETCONSOLE_PASSWORD = 'scrapy'
-
-POSTGRES_HOST = "localhost"
-POSTGRES_USER = "postgres"
-POSTGRES_PASSWORD = "postgres"
-POSTGRES_DBNAME = "avito"
-POSTGRES_PHONENUMBERS_TABLENAME = "phonenumbers"
 
 API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
 DROPPED_ITEMS_THRESHOLD = 99

@@ -16,6 +16,7 @@ class DetailedItemSaverPipeline:
             resolved_gender = self.names_db.resolve_gender(item['seller']['name'])
             if resolved_gender:
                 item['gender'] = resolved_gender
+
             item_json = dict(item)
             logging.debug(f"Processing {item_json}")
             spider.detailed_collection.insert_one(item_json)
