@@ -18,7 +18,7 @@ def resolve_price(result) -> Optional[int]:
 
 
 if __name__ == '__main__':
-    mongo_db = MongoDB("ekb_backup")
+    mongo_db = MongoDB("ekb")
 
     # Ищем людей, продающих квартиры стоимостью более чем значение FLAT_SALE_PRICE
     FLAT_SALE_PRICE = 5000000
