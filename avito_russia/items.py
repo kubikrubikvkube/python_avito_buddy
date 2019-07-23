@@ -1,5 +1,12 @@
-from scrapy import Item, Field
+import logging
+import urllib
+from enum import Enum
+from json.decoder import JSONObject
+from typing import Optional
+from urllib.parse import parse_qsl, urlparse
 
+from scrapy import Item, Field
+from scrapy.exceptions import NotSupported
 
 class DetailedItem(Item):
     id = Field()
@@ -38,3 +45,32 @@ class DetailedItem(Item):
     autotekaTeaser = Field()
     disclaimer = Field()
     gender = Field()
+    phonenumber = Field()
+    location = Field()
+
+    @staticmethod
+    def resolve_item_value(document: JSONObject) -> JSONObject:
+        assert document is not None
+        if document['type'] == 'item' or document['type'] == 'xlItem':
+            return document['value']
+        elif document['type'] == 'vip':
+            return document['value']['list'][0]['value']
+        else:
+            raise NotSupported()
+
+    @staticmethod
+    def resolve_item_id(document: JSONObject) -> int:
+        return DetailedItem.resolve_item_value(document)['id']
+
+    @staticmethod
+    def decode_phone_number(document: JSONObject) -> Optional[str]:
+        result = None
+        try:
+            raw_phone = document['contacts']['list'][0]['value']['uri']
+            r = urllib.parse.unquote_plus(raw_phone)
+            q2 = parse_qsl(urlparse(r).query)
+            result = str(q2[0][1]).strip()
+        except IndexError as ie:
+            logging.debug(ie)
+        finally:
+            return result

@@ -15,7 +15,7 @@ SPIDER_MODULES = ['avito_russia.spiders']
 NEWSPIDER_MODULE = 'avito_russia.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/12.0 Mobile/15A372 Safari/604.1'
+USER_AGENT = 'Mozilla/5.0 (Android 7.0; Mobile; rv:54.0) Gecko/54.0 Firefox/54.0'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -85,7 +85,7 @@ AUTOTHROTTLE_ENABLED = True
 # AUTOTHROTTLE_MAX_DELAY = 15
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 5
+AUTOTHROTTLE_TARGET_CONCURRENCY = 15
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = False
 

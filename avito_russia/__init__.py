@@ -31,14 +31,17 @@ class NamesDatabase:
         :param name: name
         :return: gender
         """
-
-        clean_name = name.strip().split()[0].capitalize()
-        cursor = self.conn.execute("""SELECT gender FROM names WHERE name LIKE ? LIMIT 1""", [clean_name])
-        result = cursor.fetchone()
-        if result:
-            return result[0]
-        else:
+        try:
+            clean_name = name.strip().split()[0].capitalize()
+            cursor = self.conn.execute("""SELECT gender FROM names WHERE name LIKE ? LIMIT 1""", [clean_name])
+            result = cursor.fetchone()
+            if result:
+                return result[0]
+        except IndexError as ie:
+            logging.debug(ie)
+        finally:
             return None
+
 
     def __del__(self):
         self.conn.close()
