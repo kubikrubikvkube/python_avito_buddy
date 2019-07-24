@@ -1,13 +1,7 @@
 import csv
-import logging
 
-from bson import ObjectId
-from console_progressbar import ProgressBar
 from geopy.distance import geodesic
-from pymongo.collection import Collection
 
-from avito_russia import NamesDatabase
-from items import DetailedItem
 from locations import LocationManager
 from mongodb import MongoDB
 

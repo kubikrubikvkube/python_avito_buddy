@@ -1,12 +1,12 @@
 import logging
 import urllib
-from enum import Enum
 from json.decoder import JSONObject
 from typing import Optional
 from urllib.parse import parse_qsl, urlparse
 
 from scrapy import Item, Field
 from scrapy.exceptions import NotSupported
+
 
 class DetailedItem(Item):
     id = Field()
