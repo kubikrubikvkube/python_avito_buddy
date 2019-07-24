@@ -15,24 +15,26 @@ SPIDER_MODULES = ['avito_russia.spiders']
 NEWSPIDER_MODULE = 'avito_russia.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'Mozilla/5.0 (Android 7.0; Mobile; rv:54.0) Gecko/54.0 Firefox/54.0'
+USER_AGENT = 'Mozilla/5.0 (Linux; Android 7.1.1; Moto G Play) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Mobile Safari/537.36'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 128
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
-# CONCURRENT_REQUESTS_PER_DOMAIN = 16
-# CONCURRENT_REQUESTS_PER_IP = 16
+CONCURRENT_REQUESTS_PER_DOMAIN = 64
+CONCURRENT_REQUESTS_PER_IP = 64
 
-# Disable cookies (enabled by default)
-# COOKIES_ENABLED = False
+REDIRECT_ENABLED = False
+COOKIES_ENABLED = True
+REACTOR_THREADPOOL_MAXSIZE = 32
+DOWNLOAD_TIMEOUT = 15
 
 # Override the default request headers:
 # DEFAULT_REQUEST_HEADERS = {
@@ -85,7 +87,7 @@ AUTOTHROTTLE_ENABLED = True
 # AUTOTHROTTLE_MAX_DELAY = 15
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 15
+AUTOTHROTTLE_TARGET_CONCURRENCY = 32
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = False
 

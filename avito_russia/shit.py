@@ -1,7 +1,9 @@
+import csv
 import logging
 
 from bson import ObjectId
 from console_progressbar import ProgressBar
+from geopy.distance import geodesic
 from pymongo.collection import Collection
 
 from avito_russia import NamesDatabase
@@ -10,35 +12,21 @@ from locations import LocationManager
 from mongodb import MongoDB
 
 if __name__ == '__main__':
-    location_name = "MOSCOW"
+    location_name = "EKATERINBURG"
     location = LocationManager().get_location(location_name)
-    db = MongoDB(location.detailedCollectionName)
-    collection: Collection = db.collection
-    names_db = NamesDatabase()
+    collection = MongoDB(location.detailedCollectionName).collection
 
-    all_documents = collection.count_documents(filter={"phonenumber": {"$exists": False}})
-    pb = ProgressBar(total=all_documents, prefix='Here', suffix='Now', decimals=3, length=50, fill='X', zfill='-')
-    iterations = 0
+    valid = []
+    valid_phonenumbers = []
+    main_address = (56.832265, 60.571037)
+    for document in collection.find({"$text": {"$search": "шиномонтаж"}}):
+        result = geodesic((document['coords']['lat'],document['coords']['lng']), main_address).meters
+        if result < 1500 and valid_phonenumbers.count(document['phonenumber']) is 0:
+            valid.append(document)
+            valid_phonenumbers.append(document['phonenumber'])
 
-    for document in collection.find({"phonenumber": {"$exists": False}}):
-
-        try:
-            iterations += 1
-            pb.print_progress_bar(iterations)
-            _id = document.get('_id')
-            # print(_id)
-            decoded_phone_number = DetailedItem.decode_phone_number(document)
-            if decoded_phone_number:
-                document['phonenumber'] = decoded_phone_number
-                collection.find_one_and_update({"_id": ObjectId(_id)}, {"$set": {"phonenumber": document.get("phonenumber")}})
-
-        except AttributeError as e:
-            pass
-            # print(e)
-        finally:
-            pass
-            # print(f"Remaining {all_documents} documents")
-
-    # decoded_phone_number = DetailedItem.decode_phone_number(item)
-    # if decoded_phone_number:
-    #   item['phonenumber'] = decoded_phone_number
+    with open('tires.csv', 'w', newline='',encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',',quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(["name","phonenumber","title","url"])
+        for document in valid:
+            writer.writerow([document['seller']['name'],document['phonenumber'],document['title'],document['sharing']['url']])
