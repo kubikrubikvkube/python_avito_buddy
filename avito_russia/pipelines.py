@@ -1,21 +1,38 @@
 import logging
 
 from avito_russia import NamesDatabase
+from items import DetailedItem
 from spiders import DetailedItemsSpider
+
+names_db = NamesDatabase()
 
 
 class DetailedItemSaverPipeline:
     def __init__(self) -> None:
         logging.info("DetailedItemSaverPipeline initialised")
-        self.names_db = NamesDatabase()
 
     def process_item(self, item, spider):
         if not isinstance(spider, DetailedItemsSpider):
             pass
         else:
-            resolved_gender = self.names_db.resolve_gender(item['seller']['name'])
+            resolved_gender = names_db.resolve_gender(item['seller']['name'])
             if resolved_gender:
                 item['gender'] = resolved_gender
+
+            decoded_phone_number = DetailedItem.decode_phone_number(item)
+            if decoded_phone_number:
+                item['phonenumber'] = decoded_phone_number
+
+            if item['coords']:
+                item['location'] = {
+                        "type": "Point",
+                        "coordinates": [
+                            item['coords']['lng'],
+                            item['coords']['lat']
+                        ]
+                }
+
+
             item_json = dict(item)
             logging.debug(f"Processing {item_json}")
             spider.detailed_collection.insert_one(item_json)

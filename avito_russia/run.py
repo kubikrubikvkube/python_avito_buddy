@@ -15,9 +15,9 @@ if __name__ == '__main__':
     process = CrawlerProcess(get_project_settings())
     logging.info('CrawlerProcess initialized')
     locations = LocationManager().locations_list.keys()
-    for location in locations:
-        recent_spider = RecentSpider(location_name=location)
-        process.crawl(recent_spider, location_name=location)
-        detailed_spider = DetailedItemsSpider(location_name=location)
-        process.crawl(detailed_spider, location_name=location)
-    process.start()
+
+    while True:
+        for location in locations:
+            process.crawl(RecentSpider, location_name=location)
+            process.crawl(DetailedItemsSpider, location_name=location)
+        process.start(False)

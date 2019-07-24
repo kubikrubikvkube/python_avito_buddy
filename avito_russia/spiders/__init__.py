@@ -20,15 +20,6 @@ class AvitoSpider(scrapy.Spider):
     broken_ads: int = 0
     broken_ads_in_a_row: int = 0
 
-    def resolve_item_id(self, document: JSONObject) -> int:
-        assert document is not None
-        if document['type'] == 'item' or document['type'] == 'xlItem':
-            return document['value']['id']
-        elif document['type'] == 'vip':
-            return document['value']['list'][0]['value']['id']
-        else:
-            raise NotSupported()
-
     def increment_broken_ads(self) -> None:
         self.broken_ads += 1
         self.broken_ads_in_a_row += 1
@@ -53,7 +44,7 @@ class DetailedItemsSpider(AvitoSpider):
     def next_url(self) -> str:
         document = self.recent_collection.collection.find_one_and_update({"isDetailed": {"$ne": True}},
                                                                          {"$set": {"isDetailed": True}})
-        document_id = self.resolve_item_id(document)
+        document_id = DetailedItem.resolve_item_id(document)
         return f"https://m.avito.ru/api/13/items/{document_id}?key={API_KEY}&action=view"
 
     def parse(self, response):
@@ -72,7 +63,6 @@ class DetailedItemsSpider(AvitoSpider):
         if self.broken_ads_in_a_row > BROKEN_ADS_THRESHOLD:
             raise CloseSpider("Broken Ads threshold excedeed")
         else:
-
             yield scrapy.Request(self.next_url())
 
 

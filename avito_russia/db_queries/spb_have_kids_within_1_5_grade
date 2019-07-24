@@ -1,0 +1,32 @@
+db.getCollection('spb').find({
+   $and:[
+      {
+         "userType":"private"
+      },
+      {
+         "parameters.flat":{
+            $elemMatch:{
+               $or:[
+                  {
+                     "description":"122-128 см (6-8 лет)"
+                  },
+                  {
+                     "description":"134-140 см (8-10 лет)"
+                  },
+                  {
+                     "description":"146-152 см (10-12 лет)"
+                  },
+
+               ]
+            }
+         }
+      },
+      {
+         "parameters.flat":{
+            $elemMatch:{
+               "description":"Б/у"
+            }
+         }
+      }
+   ]
+})
