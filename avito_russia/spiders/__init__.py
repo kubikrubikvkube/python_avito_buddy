@@ -6,6 +6,7 @@ from json.decoder import JSONObject
 
 import scrapy
 from scrapy.exceptions import NotSupported, CloseSpider
+from scrapy.http import TextResponse
 
 from items import DetailedItem
 from locations import LocationManager
@@ -32,27 +33,27 @@ class DetailedItemsSpider(AvitoSpider):
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
 
     def __init__(self,*args, **kwargs):
-        super().__init__()
         self.location_name = location_name = kwargs.get("location_name")
         self.name = location_name + "_detailed"
         self.location = location = LocationManager().get_location(location_name)
         self.detailed_collection = MongoDB(location.detailedCollectionName)
         self.recent_collection = MongoDB(location.recentCollectionName)
         self.start_urls = [self.next_url()]
+        super().__init__(name=self.name)
         self.logger.info(f"DetailedItemsSpider initialized")
 
+
     def next_url(self) -> str:
-        self.recent_collection.collection.find_one_and_update()
         document = self.recent_collection.collection.find_one_and_update({"isDetailed": {"$ne": True}},
                                                                          {"$set": {"isDetailed": True}})
         document_id = DetailedItem.resolve_item_id(document)
         return f"https://m.avito.ru/api/13/items/{document_id}?key={API_KEY}&action=view"
 
-    def parse(self, response):
-        json_response = json.loads(response.body_as_unicode())
-        self.logger.debug(f'Parsing response {json_response}')
+    def parse(self, response:TextResponse):
+        self.logger.debug(f'Parsing response {response}')
         if response.status == 200:
             self.reset_broken_ads_in_a_row()
+            json_response = json.loads(response.body_as_unicode())
             yield DetailedItem(json_response)
         else:
             self.increment_broken_ads()
@@ -70,7 +71,6 @@ class DetailedItemsSpider(AvitoSpider):
 class RecentSpider(AvitoSpider):
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
         self.name = kwargs.get("location_name") + "_recent"
         delta_timestamp = datetime.now() - timedelta(minutes=3)
         self.last_stamp = int(datetime.timestamp(delta_timestamp))
@@ -85,6 +85,7 @@ class RecentSpider(AvitoSpider):
             display='list',
             limit=99)
         self.start_urls = [self.next_url()]
+        super().__init__(name=self.name)
 
     def preserve(self, ad: JSONObject) -> None:
         self.logger.debug(ad)
