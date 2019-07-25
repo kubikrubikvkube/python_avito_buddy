@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from json.decoder import JSONObject
 
 import scrapy
+from bson import ObjectId
 from scrapy.exceptions import NotSupported, CloseSpider
 from scrapy.http import TextResponse
 
@@ -36,6 +37,7 @@ class DetailedItemsSpider(AvitoSpider):
         self.location_name = location_name = kwargs.get("location_name")
         self.name = location_name + "_detailed"
         self.location = location = LocationManager().get_location(location_name)
+        self.document_ids_ready_for_processing = []
         self.detailed_collection = MongoDB(location.detailedCollectionName)
         self.recent_collection = MongoDB(location.recentCollectionName)
         self.start_urls = [self.next_url()]
@@ -43,11 +45,21 @@ class DetailedItemsSpider(AvitoSpider):
         self.logger.info(f"DetailedItemsSpider initialized")
 
 
+
     def next_url(self) -> str:
-        document = self.recent_collection.collection.find_one_and_update({"isDetailed": {"$ne": True}},
-                                                                         {"$set": {"isDetailed": True}})
-        document_id = DetailedItem.resolve_item_id(document)
-        return f"https://m.avito.ru/api/13/items/{document_id}?key={API_KEY}&action=view"
+        if not self.document_ids_ready_for_processing:
+            documents = self.recent_collection.collection.find({"isDetailed": {"$ne": True}}).limit(10)
+            internal_ids = []
+            for document in documents:
+                internal_ids.append(document['_id'])
+                document_id = DetailedItem.resolve_item_id(document)
+                self.document_ids_ready_for_processing.append(document_id)
+            for internal_id in internal_ids:
+                self.recent_collection.collection.update_one(
+                    {"_id": ObjectId(str(internal_id))},
+                    {"$set": {"isDetailed": True}})
+
+        return f"https://m.avito.ru/api/13/items/{self.document_ids_ready_for_processing.pop(0)}?key={API_KEY}&action=view"
 
     def parse(self, response:TextResponse):
         self.logger.debug(f'Parsing response {response}')
