@@ -6,7 +6,6 @@ from pymongo.results import InsertOneResult
 
 
 class MongoDB:
-
     def __init__(self, collection_name: str) -> None:
         self.client = client = pymongo.MongoClient()
         self.db = db = client["avito"]

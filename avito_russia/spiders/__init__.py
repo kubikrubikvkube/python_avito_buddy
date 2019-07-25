@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import json
-import logging
 from datetime import datetime, timedelta
 from json.decoder import JSONObject
 
@@ -29,19 +28,21 @@ class AvitoSpider(scrapy.Spider):
 
 
 class DetailedItemsSpider(AvitoSpider):
-    name = 'detailed'
+
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
 
-    def __init__(self, name=None, **kwargs):
-        super().__init__(name, **kwargs)
-        self.logger.info(f"DetailedItemsSpider initialized")
+    def __init__(self,*args, **kwargs):
+        super().__init__()
         self.location_name = location_name = kwargs.get("location_name")
+        self.name = location_name + "_detailed"
         self.location = location = LocationManager().get_location(location_name)
         self.detailed_collection = MongoDB(location.detailedCollectionName)
         self.recent_collection = MongoDB(location.recentCollectionName)
         self.start_urls = [self.next_url()]
+        self.logger.info(f"DetailedItemsSpider initialized")
 
     def next_url(self) -> str:
+        self.recent_collection.collection.find_one_and_update()
         document = self.recent_collection.collection.find_one_and_update({"isDetailed": {"$ne": True}},
                                                                          {"$set": {"isDetailed": True}})
         document_id = DetailedItem.resolve_item_id(document)
@@ -67,10 +68,10 @@ class DetailedItemsSpider(AvitoSpider):
 
 
 class RecentSpider(AvitoSpider):
-    name = 'recent'
 
     def __init__(self, *args, **kwargs):
         super().__init__()
+        self.name = kwargs.get("location_name") + "_recent"
         delta_timestamp = datetime.now() - timedelta(minutes=3)
         self.last_stamp = int(datetime.timestamp(delta_timestamp))
         self.page = 1
@@ -86,7 +87,7 @@ class RecentSpider(AvitoSpider):
         self.start_urls = [self.next_url()]
 
     def preserve(self, ad: JSONObject) -> None:
-        logging.debug(ad)
+        self.logger.debug(ad)
 
         if ad['type'] == 'item' or ad['type'] == 'xlItem':
             timestamp = ad['value']['time']
