@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 
 import json
-import logging
 from datetime import datetime, timedelta
 from json.decoder import JSONObject
 
 import scrapy
+from bson import ObjectId
 from scrapy.exceptions import NotSupported, CloseSpider
+from scrapy.http import TextResponse
 
 from items import DetailedItem
 from locations import LocationManager
@@ -29,29 +30,42 @@ class AvitoSpider(scrapy.Spider):
 
 
 class DetailedItemsSpider(AvitoSpider):
-    name = 'detailed'
+
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
 
-    def __init__(self, name=None, **kwargs):
-        super().__init__(name, **kwargs)
-        self.logger.info(f"DetailedItemsSpider initialized")
+    def __init__(self,*args, **kwargs):
         self.location_name = location_name = kwargs.get("location_name")
+        self.name = location_name + "_detailed"
         self.location = location = LocationManager().get_location(location_name)
+        self.document_ids_ready_for_processing = []
         self.detailed_collection = MongoDB(location.detailedCollectionName)
         self.recent_collection = MongoDB(location.recentCollectionName)
         self.start_urls = [self.next_url()]
+        super().__init__(name=self.name)
+        self.logger.info(f"DetailedItemsSpider initialized")
+
+
 
     def next_url(self) -> str:
-        document = self.recent_collection.collection.find_one_and_update({"isDetailed": {"$ne": True}},
-                                                                         {"$set": {"isDetailed": True}})
-        document_id = DetailedItem.resolve_item_id(document)
-        return f"https://m.avito.ru/api/13/items/{document_id}?key={API_KEY}&action=view"
+        if not self.document_ids_ready_for_processing:
+            documents = self.recent_collection.collection.find({"isDetailed": {"$ne": True}}).limit(10)
+            internal_ids = []
+            for document in documents:
+                internal_ids.append(document['_id'])
+                document_id = DetailedItem.resolve_item_id(document)
+                self.document_ids_ready_for_processing.append(document_id)
+            for internal_id in internal_ids:
+                self.recent_collection.collection.update_one(
+                    {"_id": ObjectId(str(internal_id))},
+                    {"$set": {"isDetailed": True}})
 
-    def parse(self, response):
-        json_response = json.loads(response.body_as_unicode())
-        self.logger.debug(f'Parsing response {json_response}')
+        return f"https://m.avito.ru/api/13/items/{self.document_ids_ready_for_processing.pop(0)}?key={API_KEY}&action=view"
+
+    def parse(self, response:TextResponse):
+        self.logger.debug(f'Parsing response {response}')
         if response.status == 200:
             self.reset_broken_ads_in_a_row()
+            json_response = json.loads(response.body_as_unicode())
             yield DetailedItem(json_response)
         else:
             self.increment_broken_ads()
@@ -67,10 +81,9 @@ class DetailedItemsSpider(AvitoSpider):
 
 
 class RecentSpider(AvitoSpider):
-    name = 'recent'
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        self.name = kwargs.get("location_name") + "_recent"
         delta_timestamp = datetime.now() - timedelta(minutes=3)
         self.last_stamp = int(datetime.timestamp(delta_timestamp))
         self.page = 1
@@ -84,9 +97,10 @@ class RecentSpider(AvitoSpider):
             display='list',
             limit=99)
         self.start_urls = [self.next_url()]
+        super().__init__(name=self.name)
 
     def preserve(self, ad: JSONObject) -> None:
-        logging.debug(ad)
+        self.logger.debug(ad)
 
         if ad['type'] == 'item' or ad['type'] == 'xlItem':
             timestamp = ad['value']['time']

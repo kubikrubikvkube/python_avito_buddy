@@ -10,8 +10,6 @@ class Location:
     id: int
     detailedCollectionName: str
     recentCollectionName: str
-    isCity: bool
-    isRegion: bool
 
 
 class LocationManager:
@@ -28,7 +26,4 @@ class LocationManager:
 
         return Location(location['id'],
                         location['detailedCollectionName'],
-                        location['recentCollectionName'],
-                        location['isCity'],
-                        location['isRegion']
-                        )
+                        location['recentCollectionName'])

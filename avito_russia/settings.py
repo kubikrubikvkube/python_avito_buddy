@@ -21,15 +21,15 @@ USER_AGENT = 'Mozilla/5.0 (Linux; Android 7.1.1; Moto G Play) AppleWebKit/537.36
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 128
+CONCURRENT_REQUESTS = 64
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
-CONCURRENT_REQUESTS_PER_DOMAIN = 64
-CONCURRENT_REQUESTS_PER_IP = 64
+CONCURRENT_REQUESTS_PER_DOMAIN = 32
+CONCURRENT_REQUESTS_PER_IP = 32
 
 REDIRECT_ENABLED = False
 COOKIES_ENABLED = True
@@ -87,7 +87,7 @@ AUTOTHROTTLE_ENABLED = True
 # AUTOTHROTTLE_MAX_DELAY = 15
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 32
+AUTOTHROTTLE_TARGET_CONCURRENCY = 5
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = False
 
@@ -122,7 +122,7 @@ RETRY_PRIORITY_ADJUST = -1
 
 # Implicitly set statistics collection class
 STATS_CLASS = 'scrapy.statscollectors.MemoryStatsCollector'
-STATS_DUMP = False
+STATS_DUMP = True
 
 # For debug purposes telnet console should be enabled
 TELNETCONSOLE_ENABLED = False

@@ -47,6 +47,7 @@ class DetailedItem(Item):
     gender = Field()
     phonenumber = Field()
     location = Field()
+    uuid = Field()
 
     @staticmethod
     def resolve_item_value(document: JSONObject) -> JSONObject:

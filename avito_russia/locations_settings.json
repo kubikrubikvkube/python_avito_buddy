@@ -1,23 +1,27 @@
 {
-  "EKATERINBURG": {
-    "id": 654070,
-    "detailedCollectionName": "ekb",
-    "recentCollectionName": "ekb_recent",
-    "isCity": true,
-    "isRegion": false
-  },
   "MOSCOW": {
     "id": 637640,
     "detailedCollectionName": "msk",
-    "recentCollectionName": "msk_recent",
-    "isCity": true,
-    "isRegion": false
+    "recentCollectionName": "msk_recent"
+  },
+  "MOSCOWSKAYA_OBLAST": {
+    "id": 637680,
+    "detailedCollectionName": "mosoblast",
+    "recentCollectionName": "mosoblast_recent"
   },
   "SAINT-PETERSBURG": {
     "id": 107621,
     "detailedCollectionName": "spb",
-    "recentCollectionName": "spb_recent",
-    "isCity": true,
-    "isRegion": false
+    "recentCollectionName": "spb_recent"
+  },
+  "LENINGRADSKAYA_OBLAST" : {
+    "id": 636370,
+    "detailedCollectionName": "lenoblast",
+    "recentCollectionName": "lenoblast_recent"
+  },
+  "EKATERINBURG": {
+    "id": 654070,
+    "detailedCollectionName": "ekb",
+    "recentCollectionName": "ekb_recent"
   }
 }
