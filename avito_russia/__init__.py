@@ -16,7 +16,7 @@ class NamesDatabase:
         self.conn = sqlite3.connect(':memory:')
         logging.info("SQLite3 in-memory names database initialized")
         self.conn.execute("CREATE TABLE names (name text, gender text);")
-        self.conn.execute("CREATE INDEX names_idx ON names(name);")
+        self.conn.execute("CREATE UNIQUE INDEX names_idx ON names(name);")
         self.conn.execute("CREATE INDEX gender_idx ON names(gender);")
         with open("names.csv", mode="r", encoding="utf-8") as names_file:
             reader = csv.DictReader(names_file)
@@ -33,7 +33,7 @@ class NamesDatabase:
         """
         try:
             clean_name = name.strip().split()[0].capitalize()
-            cursor = self.conn.execute("""SELECT gender FROM names WHERE name LIKE ? LIMIT 1""", [clean_name])
+            cursor = self.conn.execute("""SELECT gender FROM names WHERE name = ? LIMIT 1""", [clean_name])
             result = cursor.fetchone()
             if result:
                 return result[0]

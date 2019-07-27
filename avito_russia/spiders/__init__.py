@@ -59,7 +59,11 @@ class DetailedItemsSpider(AvitoSpider):
                     {"_id": ObjectId(str(internal_id))},
                     {"$set": {"isDetailed": True}})
 
-        return f"https://m.avito.ru/api/13/items/{self.document_ids_ready_for_processing.pop(0)}?key={API_KEY}&action=view"
+        if self.document_ids_ready_for_processing:
+            return f"https://m.avito.ru/api/13/items/{self.document_ids_ready_for_processing.pop(0)}?key={API_KEY}&action=view"
+        else:
+            raise CloseSpider(f"All items processed for spider {self.name} - closing detailed spider")
+
 
     def parse(self, response:TextResponse):
         self.logger.debug(f'Parsing response {response}')
