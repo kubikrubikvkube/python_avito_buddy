@@ -1,10 +1,9 @@
 import logging
 import uuid
-from uuid import SafeUUID
 
 from avito_russia import NamesDatabase
 from items import DetailedItem
-from spiders import DetailedItemsSpider
+from spiders import DetailedItemsSpider, AvitoSpider
 
 names_db = NamesDatabase()
 
@@ -13,8 +12,11 @@ class DetailedItemSaverPipeline:
     def __init__(self) -> None:
         logging.info("DetailedItemSaverPipeline initialised")
 
-    def process_item(self, item, spider):
+    def process_item(self, item: DetailedItem, spider: AvitoSpider):
         if not isinstance(spider, DetailedItemsSpider):
+            logging.debug("DetailedItemSaverPipeline method called not from DetailedItemsSpider")
+        elif "seller" not in item:
+            logging.info(f"DetailedItem {item} is not advertisement for sale. Skipping this item")
             pass
         else:
             #Resolve gender
