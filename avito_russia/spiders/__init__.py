@@ -70,6 +70,7 @@ class DetailedItemsSpider(AvitoSpider):
         if response.status == 200:
             self.reset_broken_ads_in_a_row()
             json_response = json.loads(response.body_as_unicode())
+
             yield DetailedItem(json_response)
         else:
             self.increment_broken_ads()
