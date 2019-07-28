@@ -1,12 +1,29 @@
 import logging
 import urllib
+from enum import Enum
 from json.decoder import JSONObject
-from typing import Optional
+from typing import Optional, Type
 from urllib.parse import parse_qsl, urlparse
 
 from scrapy import Item, Field
 from scrapy.exceptions import NotSupported
 
+
+class DetailedItemType(Enum):
+    ITEM = "item",
+    XLITEM = "xlItem",
+    VIP = "vip"
+
+    @classmethod
+    def resolve_item_type(cls, document: JSONObject) -> Type[Enum]:
+        if document['type'] == 'item':
+            return cls['ITEM']
+        elif document['type'] == 'xlItem':
+            return cls['XLITEM']
+        elif document['type'] == 'vip':
+            return cls['VIP']
+        else:
+            raise NotSupported()
 
 class DetailedItem(Item):
     id = Field()
@@ -51,6 +68,7 @@ class DetailedItem(Item):
 
     @staticmethod
     def resolve_item_value(document: JSONObject) -> JSONObject:
+        """Resolves item value"""
         assert document is not None
         if document['type'] == 'item' or document['type'] == 'xlItem':
             return document['value']
@@ -61,10 +79,12 @@ class DetailedItem(Item):
 
     @staticmethod
     def resolve_item_id(document: JSONObject) -> int:
+        """Resolves item avito id"""
         return DetailedItem.resolve_item_value(document)['id']
 
     @staticmethod
     def decode_phone_number(document: JSONObject) -> Optional[str]:
+        """Returns decoded phonenumber - it's format is 79118541231"""
         result = None
         try:
             raw_phone = document['contacts']['list'][0]['value']['uri']

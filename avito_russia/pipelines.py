@@ -16,7 +16,7 @@ class DetailedItemSaverPipeline:
         if not isinstance(spider, DetailedItemsSpider):
             logging.debug("DetailedItemSaverPipeline method called not from DetailedItemsSpider")
         elif "seller" not in item:
-            logging.info(f"DetailedItem {item} is not advertisement for sale. Skipping this item")
+            logging.debug(f"DetailedItem {item} is not advertisement for sale. Skipping this item")
             pass
         else:
             #Resolve gender
