@@ -8,6 +8,7 @@ from twisted.internet import reactor
 from twisted.internet import task, defer
 
 from locations import LocationManager
+from spiders import RecentSpider, DetailedItemsSpider
 
 if __name__ == '__main__':
     logger = logging.getLogger("RecentSpider")
@@ -21,9 +22,8 @@ if __name__ == '__main__':
     def crawl_both():
         runner = CrawlerRunner(get_project_settings())
         for location in locations:
-            print(location)
-            # runner.crawl(RecentSpider, location_name=location)
-            # runner.crawl(DetailedItemsSpider, location_name=location)
+            runner.crawl(RecentSpider, location_name=location)
+            runner.crawl(DetailedItemsSpider, location_name=location)
         d: defer = runner.join()
         d.addBoth(lambda _: logging.info("Deferred returned that crawling is finished"))
 
