@@ -1,5 +1,7 @@
 import logging
+import urllib
 import uuid
+from urllib.parse import parse_qsl, urlparse
 
 from avito_russia import NamesDatabase
 from items import DetailedItem
@@ -40,6 +42,12 @@ class DetailedItemSaverPipeline:
                         ]
                 }
 
+            #Decode userKey
+            if item['userType'] == 'private' and item['seller']['link']:
+                r = urllib.parse.unquote_plus(item['seller']['link'])
+                q2 = parse_qsl(urlparse(r).query)
+                userKey = str(q2[0][1]).strip()
+                item['seller']['userKey'] = userKey
 
             item_json = dict(item)
             logging.debug(f"Processing {item_json}")
