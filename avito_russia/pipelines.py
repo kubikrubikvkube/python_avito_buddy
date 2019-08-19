@@ -28,6 +28,13 @@ class DetailedItemSaverPipeline:
             #Mark UUID
             item['uuid'] = str(uuid.uuid4())
 
+            #Store prices as ints
+            if item['price']['value']:
+                invalid_price_values = ["Цена не указана", "Договорная", "Бесплатно"]
+                price = item['price']['value']
+                if not invalid_price_values.count(price):
+                    item['price']['value'] = int(price.replace(" ", ""))
+
             #Decode phonenumber
             decoded_phone_number = DetailedItem.decode_phone_number(item)
             if decoded_phone_number:
