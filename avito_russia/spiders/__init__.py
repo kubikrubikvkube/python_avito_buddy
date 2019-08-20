@@ -48,7 +48,7 @@ class DetailedItemsSpider(AvitoSpider):
 
     def next_url(self) -> str:
         if not self.document_ids_ready_for_processing:
-            documents = self.recent_collection.collection.find({"isDetailed": {"$ne": True}}).limit(10)
+            documents = self.recent_collection.collection.find({"isDetailed": {"$ne": True}}).limit(50)
             internal_ids = []
             for document in documents:
                 internal_ids.append(document['_id'])

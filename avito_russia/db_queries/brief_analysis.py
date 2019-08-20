@@ -3,12 +3,13 @@ import pandas as pd
 
 from locations import LocationManager
 from mongodb import MongoDB
+from matplotlib.ticker import FormatStrFormatter
 
 if __name__ == '__main__':
     location_name = "SAINT-PETERSBURG"
     location = LocationManager().get_location(location_name)
     collection = MongoDB(location.detailedCollectionName).collection
-    game_name = "god of war"
+    game_name = "metro exodus"
     cursor = collection.find({
         "$and": [
             {
@@ -44,7 +45,15 @@ if __name__ == '__main__':
         lng = ad['location']['coordinates'][0]
         data.append([uuid, price, lat, lng])
     df = pd.DataFrame(data, columns=["uuid", "price", "lat", "lng"])
-    print(df.describe())
-    print("\n")
-    print(df.head())
+
+    plot = df.plot(y="price")
+    plot.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     plt.show()
+    print(df.info(verbose=True, memory_usage=True))
+    print(df.head())
+    print(df.describe())
+
+
+
+
+
