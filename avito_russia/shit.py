@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-import pandas as pd
 from bson import ObjectId
 from console_progressbar import ProgressBar
 
@@ -7,7 +5,7 @@ from locations import LocationManager
 from mongodb import MongoDB
 
 if __name__ == '__main__':
-    location_name = "MOSCOW"
+    location_name = "EKATERINBURG"
     location = LocationManager().get_location(location_name)
     collection = MongoDB(location.detailedCollectionName).collection
 
