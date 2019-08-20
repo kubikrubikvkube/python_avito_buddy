@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+from pymongo import ASCENDING
 
 from locations import LocationManager
 from mongodb import MongoDB
@@ -9,9 +10,9 @@ if __name__ == '__main__':
     location_name = "SAINT-PETERSBURG"
     location = LocationManager().get_location(location_name)
     collection = MongoDB(location.detailedCollectionName).collection
-    game_name = "a way out"
+    game_name = "\"iphone\""
     print(f"Trying to find {game_name} in {location_name} city...")
-    filter = {
+    _filter = {
         "$and": [
             {
                 "$text": {
@@ -19,32 +20,31 @@ if __name__ == '__main__':
                 }
             },
             {
-                "parameters.flat.description": "Игры, приставки и программы"
-            },
-            {
                 "price.value": {
-                    "$lte": 4000
+                    "$gte": 3000
                 }
             },
             {
                 "price.value": {
-                        "$gte": 150
-                    }
+                    "$lte": 100000
+                }
             }
         ]
     }
 
-    found_documents_count = collection.count_documents(filter)
+    found_documents_count = collection.count_documents(_filter)
     print(f"Found {found_documents_count} documents")
     invalid_price_values = ["Цена не указана", "Договорная", "Бесплатно"]
     data = []
-    collection.find(filter=filter,projection={
+    _projection = {
         "_id": 0,
         "uuid": 1,
         "price.value": 1,
         "location": 1
-    })
-    for ad in collection.find(filter):
+    }
+    _sort = [('time', ASCENDING)]
+
+    for ad in collection.find(filter=_filter, projection=_projection, sort=_sort):
         uuid = ad['uuid']
         raw_price = ad['price']['value']
         if type(raw_price) is int:
@@ -56,12 +56,12 @@ if __name__ == '__main__':
         lng = ad['location']['coordinates'][0]
         data.append([uuid, price, lat, lng])
     df = pd.DataFrame(data, columns=["uuid", "price", "lat", "lng"])
-
-    #plot = df.plot(y="price")
-    #plot.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    #plt.show()
-    print(df.info(verbose=True, memory_usage=True))
-    print(df.head())
-    print(df.describe())
+    print(f"Info: {df.info(verbose=True, memory_usage=True)}")
+    print(f"Head: {df.head()}")
+    print(f"Describe: {df.describe()}")
+    print(f"Price mean: {df['price'].mean()}")
     if df.shape[0] <= 100:
         print(df.to_string())
+    plot = df.plot(y="price")
+    plot.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    plt.show()
