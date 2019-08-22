@@ -1,17 +1,22 @@
 import logging
 from typing import Dict
-
+from settings import MONGO_DATABASE_NAME,MONGO_USER,MONGO_PASSWORD,MONGO_HOST,MONGO_PORT
 import pymongo
 from pymongo.results import InsertOneResult
 
 
 class MongoDB:
     def __init__(self, collection_name: str) -> None:
-        self.client = client = pymongo.MongoClient()
-        self.db = db = client["avito"]
+        connection_string = f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}/{MONGO_DATABASE_NAME}"
+        self.client = client = pymongo.MongoClient(host=connection_string,port=MONGO_PORT)
+        print(f"MongoDB client is {client}")
+        self.db = db = client[MONGO_DATABASE_NAME]
+        print(f"MongoDB db is: {db}")
         self.collection = db[collection_name]
-        logging.info("MongoDB db_connection opened")
+        print(f"MongoDB collection is {self.collection}")
         logging.info(f"MongoDB server info: {client.server_info()}")
+        logging.info(f"MongoDB db names: {client.list_database_names()}")
+        logging.info("MongoDB db_connection opened")
 
     def insert_one(self, json: Dict) -> InsertOneResult:
         """
