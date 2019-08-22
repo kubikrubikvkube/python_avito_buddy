@@ -130,6 +130,12 @@ TELNETCONSOLE_USERNAME = 'scrapy'
 TELNETCONSOLE_PASSWORD = 'scrapy'
 
 API_KEY = "af0deccbgcgidddjgnvljitntccdduijhdinfgjgfjir"
+MONGO_HOST = "localhost"
+MONGO_PORT = 27017
+MONGO_USER = "avito"
+MONGO_PASSWORD = "avito"
+MONGO_DATABASE_NAME = "avito"
+
 DROPPED_ITEMS_THRESHOLD = 99
 BROKEN_ADS_THRESHOLD = 30
 
