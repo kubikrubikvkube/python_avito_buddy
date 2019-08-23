@@ -1,48 +1,60 @@
-from bson import ObjectId
-from console_progressbar import ProgressBar
+import pdb
 
 from locations import LocationManager
 from mongodb import MongoDB
 
 if __name__ == '__main__':
-    location_name = "EKATERINBURG"
+    location_name = "SAINT-PETERSBURG"
     location = LocationManager().get_location(location_name)
     collection = MongoDB(location.detailedCollectionName).collection
 
+    coordinates = []
+
     filter = {
-        "$and": [
-            {
-                "price.value": {
-                    "$exists": True
-                }
-            },
-            {
-                "price.value": {
-                    "$type": 2
+        "userType": "private",
+        "location": {
+            "$geoWithin": {
+                "$geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [
+                            30.4109716,
+                            60.0529527
+                        ],
+                        [
+                            30.4246187,
+                            60.0697657
+                        ],
+                        [
+                            30.4489088,
+                            60.0625061
+                        ],
+                        [
+                            30.4301548,
+                            60.0464179
+                        ],
+                        [
+                            30.4120445,
+                            60.0520957
+                        ],
+                        [
+                            30.4109716,
+                            60.0529527
+                        ]
+
+                    ]]
+
                 }
             }
-        ]
+        }
     }
 
-    print("Started")
+    unique_phonenumers = set()
+    count = collection.count_documents(filter)
+    for document in collection.find(filter):
+        if ("phonenumber" in document):
+            unique_phonenumers.add(document['phonenumber'])
 
-    invalid_price_values = ["Цена не указана", "Договорная", "Бесплатно", "Зарплата не указана"]
-    not_processed_count = collection.count_documents(filter)
-    counter = 0
-    print(f"Not processed {not_processed_count}")
-    pb = ProgressBar(total=not_processed_count, decimals=3, length=50, fill='X', zfill='-')
-    for item in collection.find(filter):
-        if item['price']['value']:
-            raw_price = item['price']['value']
-            if not invalid_price_values.count(raw_price) and type(raw_price) is str:
-                price = int(raw_price.replace(" ", ""))
-                collection.update_one({
-                    "_id": ObjectId(str(item['_id']))
-                }, {
-                    "$set": {"price.value": price}
-                })
-        counter += 1
-        pb.print_progress_bar(counter)
-        # print(f"Processed {counter} items last one has uuid {item['uuid']}")
-
-    print("All done")
+    print("\n")
+    print(len(unique_phonenumers))
+   # [print(document) for document in collection.find(filter)]
