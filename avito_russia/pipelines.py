@@ -3,11 +3,11 @@ import urllib
 import uuid
 from urllib.parse import parse_qsl, urlparse
 
-from avito_russia import NamesDatabase
-from items import DetailedItem
-from spiders import DetailedItemsSpider, AvitoSpider
+import requests
 
-names_db = NamesDatabase()
+from items import DetailedItem
+from settings import GENDER_RESOLVER_HOST
+from spiders import DetailedItemsSpider, AvitoSpider
 
 
 class DetailedItemSaverPipeline:
@@ -22,9 +22,14 @@ class DetailedItemSaverPipeline:
             pass
         else:
             #Resolve gender
-            resolved_gender = names_db.resolve_gender(item['seller']['name'])
-            if resolved_gender:
-                item['gender'] = resolved_gender
+            name_request_json = {
+                "name": item['seller']['name']
+            }
+            r = requests.post(GENDER_RESOLVER_HOST, json=name_request_json)
+            if r.status_code == 200:
+                json_response = r.json()
+                item['gender'] = json_response['gender']
+
             #Mark UUID
             item['uuid'] = str(uuid.uuid4())
 

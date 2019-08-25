@@ -135,7 +135,12 @@ MONGO_PORT = 27017
 MONGO_USER = "avito"
 MONGO_PASSWORD = "avito"
 MONGO_DATABASE_NAME = "avito"
-
+GENDER_RESOLVER_HOST = "http://localhost:8080/name-resolver"
+#MONGO_HOST = "rc1b-usoz1ekmbx6yb0pi.mdb.yandexcloud.net"
+#MONGO_PORT = 27018
+#MONGO_USER = "avito"
+#MONGO_PASSWORD = "DNIalr93118"
+#MONGO_DATABASE_NAME = "avito"
 DROPPED_ITEMS_THRESHOLD = 99
 BROKEN_ADS_THRESHOLD = 30
 
