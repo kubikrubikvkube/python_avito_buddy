@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
 
     def crawl():
-        logging.info(f"Sleeping 1 minute at {datetime.now()} - just in case")
+        #logging.info(f"Sleeping 1 minute at {datetime.now()} - just in case")
         sleep(60)
         for location in locations:
             runner.crawl(RecentSpider, location_name=location)
