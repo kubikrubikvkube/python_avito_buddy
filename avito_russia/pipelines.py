@@ -6,6 +6,7 @@ from urllib.parse import parse_qsl, urlparse
 import requests
 
 from items import DetailedItem
+from phonenumbers import PhoneNumberValidator
 from settings import GENDER_RESOLVER_HOST
 from spiders import DetailedItemsSpider, AvitoSpider
 
@@ -27,8 +28,13 @@ class DetailedItemSaverPipeline:
             }
             r = requests.post(GENDER_RESOLVER_HOST, json=name_request_json)
             if r.status_code == 200:
-                json_response = r.json()
-                item['gender'] = json_response['gender']
+                gender = r.json()['gender']
+                if gender != "UNKNOWN":
+                    item['gender'] = gender.lower()
+                else:
+                    item['gender'] = None
+            else:
+                item['gender'] = None
 
             #Mark UUID
             item['uuid'] = str(uuid.uuid4())
@@ -42,7 +48,7 @@ class DetailedItemSaverPipeline:
 
             #Decode phonenumber
             decoded_phone_number = DetailedItem.decode_phone_number(item)
-            if decoded_phone_number:
+            if decoded_phone_number and PhoneNumberValidator.is_valid(decoded_phone_number):
                 item['phonenumber'] = decoded_phone_number
             #Set coordinates
             if item['coords']:

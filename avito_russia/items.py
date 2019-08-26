@@ -65,6 +65,7 @@ class DetailedItem(Item):
     phonenumber = Field()
     location = Field()
     uuid = Field()
+    autoCatalogAction = Field()
 
     @staticmethod
     def resolve_item_value(document: JSONObject) -> JSONObject:
