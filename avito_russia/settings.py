@@ -146,4 +146,4 @@ BROKEN_ADS_THRESHOLD = 30
 
 LOG_ENABLED = True
 LOG_LEVEL = "INFO"
-# LOG_FILE = "main.log"
+#LOG_FILE = "main.log"

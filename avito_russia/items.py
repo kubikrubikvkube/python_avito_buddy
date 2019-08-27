@@ -66,6 +66,7 @@ class DetailedItem(Item):
     location = Field()
     uuid = Field()
     autoCatalogAction = Field()
+    geoReferences = Field()
 
     @staticmethod
     def resolve_item_value(document: JSONObject) -> JSONObject:
