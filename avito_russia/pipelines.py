@@ -23,18 +23,15 @@ class DetailedItemSaverPipeline:
             pass
         else:
             #Resolve gender
-            name_request_json = {
-                "name": item['seller']['name']
-            }
-            r = requests.post(GENDER_RESOLVER_HOST, json=name_request_json)
-            if r.status_code == 200:
-                gender = r.json()['gender']
-                if gender != "UNKNOWN":
-                    item['gender'] = gender.lower()
-                else:
-                    item['gender'] = None
-            else:
-                item['gender'] = None
+            if item['seller']['name']:
+                name_request_json = {
+                    "name": item['seller']['name']
+                }
+                r = requests.post(GENDER_RESOLVER_HOST, json=name_request_json)
+                if r.status_code == 200:
+                    gender = r.json()['gender']
+                    if gender != "UNKNOWN":
+                        item['gender'] = gender.lower()
 
             #Mark UUID
             item['uuid'] = str(uuid.uuid4())
