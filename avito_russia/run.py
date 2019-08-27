@@ -22,8 +22,8 @@ if __name__ == '__main__':
 
 
     def crawl():
-        logging.info(f"Sleeping 1 minute at {datetime.now()} - just in case")
-        sleep(60)
+        logging.info(f"Sleeping 2 minutes at {datetime.now()} to avoid avito throttling")
+        sleep(120)
         for location in locations:
             runner.crawl(RecentSpider, location_name=location)
             runner.crawl(DetailedItemsSpider, location_name=location)
