@@ -30,10 +30,9 @@ class AvitoSpider(scrapy.Spider):
 
 
 class DetailedItemsSpider(AvitoSpider):
-
     url_pattern = f"https://m.avito.ru/api/13/items/__id__?key={API_KEY}&action=view"
 
-    def __init__(self,*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         self.location_name = location_name = kwargs.get("location_name")
         self.name = location_name + "_detailed"
         self.location = location = LocationManager().get_location(location_name)
@@ -43,8 +42,6 @@ class DetailedItemsSpider(AvitoSpider):
         self.start_urls = [self.next_url()]
         super().__init__(name=self.name)
         self.logger.info(f"DetailedItemsSpider initialized")
-
-
 
     def next_url(self) -> str:
         if not self.document_ids_ready_for_processing:
@@ -64,8 +61,7 @@ class DetailedItemsSpider(AvitoSpider):
         else:
             raise CloseSpider(f"All items processed for spider {self.name} - closing detailed spider")
 
-
-    def parse(self, response:TextResponse):
+    def parse(self, response: TextResponse):
         self.logger.debug(f'Parsing response {response}')
         if response.status == 200:
             self.reset_broken_ads_in_a_row()
