@@ -73,7 +73,7 @@ class DetailedItemSaverPipeline:
             # 9. Decode phonenumber
             decoded_phone_number = DetailedItem.decode_phone_number(raw_item)
             if decoded_phone_number and PhoneNumberValidator.is_valid(decoded_phone_number):
-                processed_item['phonenumber'] = decoded_phone_number
+                processed_item['phoneNumber'] = decoded_phone_number
 
             # 10. Preserve seller manager name
             if 'seller' in raw_item and 'manager' in raw_item['seller']:
@@ -117,15 +117,16 @@ class DetailedItemSaverPipeline:
             # 20. Resolve UUID
             processed_item['uuid'] = str(uuid.uuid4())
 
-            # 21. Mark as 'new'
-            processed_item['newFormat'] = True
-
-            # 22. Resolve userKey
+            # 21. Resolve userKey
             if raw_item['userType'] == 'private' and raw_item['seller']['link']:
                 r = urllib.parse.unquote_plus(raw_item['seller']['link'])
                 q2 = parse_qsl(urlparse(r).query)
                 userKey = str(q2[0][1]).strip()
                 processed_item['seller']['userKey'] = userKey
 
-            logging.debug(f"Processing {processed_item}")
+            # 22. Mark format version
+            processed_item['formatVersion'] = '1.2'
+
+            # logging.debug(f"Processing {processed_item}")
+            logging.debug(f"Processing {processed_item['uuid']}")
             spider.detailed_collection.insert_one(processed_item)
