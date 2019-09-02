@@ -1,7 +1,5 @@
 import logging
-import urllib
 import uuid
-from urllib.parse import parse_qsl, urlparse
 
 import requests
 
@@ -112,13 +110,6 @@ class DetailedItemSaverPipeline:
 
             # 20. Resolve UUID
             processed_item['uuid'] = str(uuid.uuid4())
-
-            # 21. Resolve userKey
-            if raw_item['userType'] == 'private' and raw_item['seller']['link']:
-                r = urllib.parse.unquote_plus(raw_item['seller']['link'])
-                q2 = parse_qsl(urlparse(r).query)
-                userKey = str(q2[0][1]).strip()
-                processed_item['seller']['userKey'] = userKey
 
             # logging.debug(f"Processing {processed_item}")
             logging.debug(f"Processing {processed_item['uuid']}")
