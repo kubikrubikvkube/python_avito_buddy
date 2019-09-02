@@ -59,10 +59,6 @@ class DetailedItemSaverPipeline:
                 ]
             }
 
-            # 6. Preserve location
-            if 'metroId' in raw_item:
-                processed_item['metroId'] = raw_item['metroId']
-
             # 7. Preserve advertisement URL
             if 'sharing' in raw_item and 'url' in raw_item['sharing']:
                 processed_item['sharing']['url'] = raw_item['sharing']['url']
@@ -123,9 +119,6 @@ class DetailedItemSaverPipeline:
                 q2 = parse_qsl(urlparse(r).query)
                 userKey = str(q2[0][1]).strip()
                 processed_item['seller']['userKey'] = userKey
-
-            # 22. Mark format version
-            processed_item['formatVersion'] = '1.2'
 
             # logging.debug(f"Processing {processed_item}")
             logging.debug(f"Processing {processed_item['uuid']}")
