@@ -12,7 +12,7 @@ from scrapy.http import TextResponse
 from items import DetailedItem
 from locations import LocationManager
 from mongodb import MongoDB
-from settings import API_KEY, BROKEN_ADS_THRESHOLD
+from settings import API_KEY, BROKEN_ADS_THRESHOLD, PROXY, PROXY_ENABLED, DEFAULT_REQUEST_HEADERS
 
 
 class AvitoSpider(scrapy.Spider):
@@ -48,7 +48,7 @@ class DetailedItemsSpider(AvitoSpider):
 
     def next_url(self) -> str:
         if not self.document_ids_ready_for_processing:
-            documents = self.recent_collection.collection.find({"isDetailed": {"$ne": True}}).limit(50)
+            documents = self.recent_collection.collection.find({"isDetailed": False}).limit(50)
             internal_ids = []
             for document in documents:
                 internal_ids.append(document['_id'])
@@ -60,7 +60,7 @@ class DetailedItemsSpider(AvitoSpider):
                     {"$set": {"isDetailed": True}})
 
         if self.document_ids_ready_for_processing:
-            return f"https://m.avito.ru/api/13/items/{self.document_ids_ready_for_processing.pop(0)}?key={API_KEY}&action=view"
+            return f"https://m.avito.ru/api/13/items/{self.document_ids_ready_for_processing.pop(0)}?key={API_KEY}&action=view&includeRefs=1"
         else:
             raise CloseSpider(f"All items processed for spider {self.name} - closing detailed spider")
 
@@ -82,7 +82,10 @@ class DetailedItemsSpider(AvitoSpider):
         if self.broken_ads_in_a_row > BROKEN_ADS_THRESHOLD:
             raise CloseSpider("Broken Ads threshold excedeed")
         else:
-            yield scrapy.Request(self.next_url())
+            request = scrapy.Request(self.next_url(), headers=DEFAULT_REQUEST_HEADERS)
+            if PROXY_ENABLED:
+                request.meta['proxy'] = PROXY
+            yield request
 
 
 class RecentSpider(AvitoSpider):
@@ -106,6 +109,7 @@ class RecentSpider(AvitoSpider):
 
     def preserve(self, ad: JSONObject) -> None:
         self.logger.debug(ad)
+        ad['isDetailed'] = False
 
         if ad['type'] == 'item' or ad['type'] == 'xlItem':
             timestamp = ad['value']['time']
@@ -147,4 +151,7 @@ class RecentSpider(AvitoSpider):
             self.preserve(item)
 
         if items:
-            yield scrapy.Request(self.next_url())
+            request = scrapy.Request(self.next_url())
+            if PROXY_ENABLED:
+                request.meta['proxy'] = PROXY
+            yield request
