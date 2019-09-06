@@ -8,7 +8,7 @@
 #     https://doc.scrapy.org/en/latest/topics/settings.html
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-from providers import UserAgentProvider, ProxyProvider
+from providers import UserAgentProvider
 
 BOT_NAME = 'avito_russia'
 
@@ -150,4 +150,3 @@ LOG_ENABLED = True
 LOG_LEVEL = "INFO"
 LOG_FILE = "main.log"
 PROXY_ENABLED = True
-PROXY = ProxyProvider.provide()
