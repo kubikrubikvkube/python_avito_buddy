@@ -8,7 +8,6 @@
 #     https://doc.scrapy.org/en/latest/topics/settings.html
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-from providers import UserAgentProvider
 
 BOT_NAME = 'avito_russia'
 
@@ -16,7 +15,7 @@ SPIDER_MODULES = ['avito_russia.spiders']
 NEWSPIDER_MODULE = 'avito_russia.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'Mozilla/5.0 (Linux; Android 7.0; HUAWEI VNS-L23) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.80 Mobile Safari/537.36'
+# USER_AGENT = 'Mozilla/5.0 (Linux; Android 7.0; HUAWEI VNS-L23) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.80 Mobile Safari/537.36'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -42,7 +41,6 @@ DOWNLOAD_TIMEOUT = 15
 # DEFAULT_REQUEST_HEADERS = {
 DEFAULT_REQUEST_HEADERS = {
     'Host': 'm.avito.ru',
-    'User-Agent': UserAgentProvider.provide(),
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.5',
     'Accept-Encoding': 'gzip, deflate, br',
@@ -89,7 +87,7 @@ AUTOTHROTTLE_ENABLED = True
 # AUTOTHROTTLE_MAX_DELAY = 15
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 1
+AUTOTHROTTLE_TARGET_CONCURRENCY = 0.5
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = False
 
@@ -148,5 +146,5 @@ BROKEN_ADS_THRESHOLD = 30
 
 LOG_ENABLED = True
 LOG_LEVEL = "INFO"
-LOG_FILE = "main.log"
+#LOG_FILE = "main.log"
 PROXY_ENABLED = True
