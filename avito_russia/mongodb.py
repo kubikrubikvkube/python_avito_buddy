@@ -30,18 +30,6 @@ class MongoDB:
                 unique_numbers.add(ad['phoneNumber'])
         return len(unique_numbers)
 
-    def filter_unique_phoneNumbers(self, ads: List) -> List[Dict]:
-        print(f"Counting unique phone numbers for {len(ads)} ads...")
-        unique_phoneNumbers = set()
-        unique_ads = []
-        for ad in ads:
-            ad_phoneNumber = ad['phoneNumber']
-            if ad_phoneNumber not in unique_phoneNumbers:
-                unique_phoneNumbers.add(ad_phoneNumber)
-                unique_ads.append(ad)
-        print(f"There is {len(unique_phoneNumbers)} unique phone numbers")
-        return unique_ads
-
     def find(self, filter: Dict, only_unique_phoneNumbers: bool = True, limit=None) -> List[Dict]:
         print(
             f"Finding entries by filter {filter}  with {'unique' if only_unique_phoneNumbers else 'not unique'} phone numbers")
