@@ -14,7 +14,5 @@ if __name__ == '__main__':
         ]
     }
 
-    found_ads = list(mongoDB.collection.find(filter=filter))
-    print(f"Non-unique ads {len(found_ads)}")
-    unique_ads = mongoDB.filter_unique_phoneNumbers(found_ads)
-    print(f"Unique ads {len(unique_ads)}")
+    unique_results = mongoDB.find(filter, False)
+    print(f"Unique ads {len(unique_results)}")
