@@ -65,6 +65,9 @@ class DetailedItem(Item):
     phonenumber = Field()
     location = Field()
     uuid = Field()
+    autoCatalogAction = Field()
+    geoReferences = Field()
+    refs = Field()
 
     @staticmethod
     def resolve_item_value(document: JSONObject) -> JSONObject:
@@ -86,11 +89,13 @@ class DetailedItem(Item):
     def decode_phone_number(document: JSONObject) -> Optional[str]:
         """Returns decoded phonenumber - it's format is 79118541231"""
         result = None
+
         try:
-            raw_phone = document['contacts']['list'][0]['value']['uri']
-            r = urllib.parse.unquote_plus(raw_phone)
-            q2 = parse_qsl(urlparse(r).query)
-            result = str(q2[0][1]).strip()
+            if document['contacts']['list'][0]['type'] == "phone":
+                raw_phone = document['contacts']['list'][0]['value']['uri']
+                r = urllib.parse.unquote_plus(raw_phone)
+                q2 = parse_qsl(urlparse(r).query)
+                result = str(q2[0][1]).strip()
         except IndexError as ie:
             logging.debug(ie)
         finally:
