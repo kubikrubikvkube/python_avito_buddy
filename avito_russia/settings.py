@@ -15,41 +15,41 @@ SPIDER_MODULES = ['avito_russia.spiders']
 NEWSPIDER_MODULE = 'avito_russia.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'Mozilla/5.0 (Linux; Android 7.1.1; Moto G Play) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Mobile Safari/537.36'
+# USER_AGENT = 'Mozilla/5.0 (Linux; Android 7.0; HUAWEI VNS-L23) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.80 Mobile Safari/537.36'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 64
+CONCURRENT_REQUESTS = 5
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
-CONCURRENT_REQUESTS_PER_DOMAIN = 32
-CONCURRENT_REQUESTS_PER_IP = 32
+CONCURRENT_REQUESTS_PER_DOMAIN = 5
+CONCURRENT_REQUESTS_PER_IP = 5
 
 REDIRECT_ENABLED = False
-COOKIES_ENABLED = False
+COOKIES_ENABLED = True
+COOKIES_DEBUG = False
 REACTOR_THREADPOOL_MAXSIZE = 32
 DOWNLOAD_TIMEOUT = 15
 
 # Override the default request headers:
 # DEFAULT_REQUEST_HEADERS = {
-#   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#   'Accept-Language': 'en',
-# }
 DEFAULT_REQUEST_HEADERS = {
     'Host': 'm.avito.ru',
-    'Accept': 'application/json, text/plain, */*',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.5',
     'Accept-Encoding': 'gzip, deflate, br',
-    'Referer': 'https://m.avito.ru',
     'Content-Type': 'application/json;charset=utf-8',
     'Connection': 'keep-alive',
-    'TE': 'Trailers'
+    'Upgrade-Insecure-Requests': 1,
+    'TE': 'Trailers',
+    'Pragma': 'no-cache',
+    'Cache-Control': 'no-cache'
 }
 
 # Enable or disable spider middlewares
@@ -60,9 +60,9 @@ SPIDER_MIDDLEWARES = {
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'avito_russia.middlewares.AvitoRussiaDownloaderMiddleware': 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 1
+}
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
@@ -87,7 +87,7 @@ AUTOTHROTTLE_ENABLED = True
 # AUTOTHROTTLE_MAX_DELAY = 15
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 5
+AUTOTHROTTLE_TARGET_CONCURRENCY = 0.5
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = False
 
@@ -136,14 +136,15 @@ MONGO_USER = "avito"
 MONGO_PASSWORD = "avito"
 MONGO_DATABASE_NAME = "avito"
 GENDER_RESOLVER_HOST = "http://localhost:8080/name-resolver"
-#MONGO_HOST = "rc1b-usoz1ekmbx6yb0pi.mdb.yandexcloud.net"
-#MONGO_PORT = 27018
-#MONGO_USER = "avito"
-#MONGO_PASSWORD = "DNIalr93118"
-#MONGO_DATABASE_NAME = "avito"
+# MONGO_HOST = "rc1b-usoz1ekmbx6yb0pi.mdb.yandexcloud.net"
+# MONGO_PORT = 27018
+# MONGO_USER = "avito"
+# MONGO_PASSWORD = "DNIalr93118"
+# MONGO_DATABASE_NAME = "avito"
 DROPPED_ITEMS_THRESHOLD = 99
 BROKEN_ADS_THRESHOLD = 30
 
 LOG_ENABLED = True
 LOG_LEVEL = "INFO"
 #LOG_FILE = "main.log"
+PROXY_ENABLED = True

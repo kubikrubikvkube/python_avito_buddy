@@ -1,15 +1,15 @@
 from __future__ import absolute_import
 
 import logging
-from time import sleep
 from datetime import datetime
-from scrapy.crawler import CrawlerRunner, CrawlerProcess
+from time import sleep
+
+from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-from twisted.internet import reactor
-from twisted.internet import task, defer
+from twisted.internet import defer
 
 from locations import LocationManager
-from spiders import RecentSpider, DetailedItemsSpider
+from spiders import DetailedItemsSpider, RecentSpider
 
 if __name__ == '__main__':
     logger = logging.getLogger("RecentSpider")
