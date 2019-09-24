@@ -1,7 +1,4 @@
-import csv
-import urllib
 from typing import Optional
-from urllib.parse import parse_qsl, urlparse
 
 from pymongo.cursor import Cursor
 
@@ -47,21 +44,5 @@ if __name__ == '__main__':
         price_int = resolve_price(result)
         if price_int and price_int > CAR_SALE_PRICE:
             valid_results.append(result)
-
-    with open('ekb_rich.csv', mode='w', newline='', encoding='utf-8') as phonenumbers_file:
-        writer = csv.writer(phonenumbers_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(["external_id", "phone"])
-        for valid_result in valid_results:
-            try:
-                raw_phone = valid_result['contacts']['list'][0]['value']['uri']
-                r = urllib.parse.unquote_plus(raw_phone)
-                q2 = parse_qsl(urlparse(r).query)
-                phone_number = str.strip(q2[0][1])
-                external_id = valid_result['_id']
-                row = [external_id, phone_number]
-                print(row)
-                writer.writerow(row)
-            except IndexError:
-                pass
 
     print(f"Valid results: {len(valid_results)}")

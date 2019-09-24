@@ -47,8 +47,8 @@ class MongoDB:
             unique_numbers = set()
             unique_ads = []
             for ad in found_results_cursor:
-                ad_phoneNumber = ad['phoneNumber']
-                if ad_phoneNumber not in unique_numbers:
+                ad_phoneNumber = ad['phoneNumber'] if 'phoneNumber' in ad else None
+                if ad_phoneNumber is not None and ad_phoneNumber not in unique_numbers:
                     unique_numbers.add(ad_phoneNumber)
                     unique_ads.append(ad)
             final_results_count = len(unique_ads)
