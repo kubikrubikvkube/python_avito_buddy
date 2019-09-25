@@ -6,6 +6,7 @@ import pymongo
 from pymongo.cursor import Cursor
 from pymongo.results import InsertOneResult
 
+from items import MongoDetailedItem
 from settings import MONGO_DATABASE_NAME, MONGO_USER, MONGO_PASSWORD, MONGO_HOST, MONGO_PORT
 
 
@@ -30,7 +31,7 @@ class MongoDB:
                 unique_numbers.add(ad['phoneNumber'])
         return len(unique_numbers)
 
-    def find(self, filter: Dict, only_unique_phoneNumbers: bool = True, limit=None) -> List[Dict]:
+    def find(self, filter: Dict, only_unique_phoneNumbers: bool = True, limit=None) -> List[MongoDetailedItem]:
         print(
             f"Finding entries by filter {filter}  with {'unique' if only_unique_phoneNumbers else 'not unique'} phone numbers")
         if limit:
@@ -53,7 +54,7 @@ class MongoDB:
                     unique_ads.append(ad)
             final_results_count = len(unique_ads)
             print(f"Found {final_results_count} unique documents")
-            return unique_ads
+            return [MongoDetailedItem(dictionary) for dictionary in unique_ads]
 
 
     def insert_one(self, json: Dict) -> InsertOneResult:

@@ -2,7 +2,7 @@ import logging
 import urllib
 from enum import Enum
 from json.decoder import JSONObject
-from typing import Optional, Type
+from typing import Optional, Type, Dict
 from urllib.parse import parse_qsl, urlparse
 
 from scrapy import Item, Field
@@ -24,6 +24,28 @@ class DetailedItemType(Enum):
             return cls['VIP']
         else:
             raise NotSupported()
+
+
+class MongoDetailedItem():
+    def __init__(self, dictionary: Dict) -> None:
+        self._dict = dictionary
+        self._id = dictionary['_id']
+        self.categoryId = dictionary['categoryId']
+        self.url = dictionary['sharing']['url']
+        self.title = dictionary['title']
+        self.userType = dictionary['userType'] if 'userType' in dictionary else None
+        self.timestamp = dictionary['time']
+        self.description = dictionary['description']
+        self.parameters = dictionary['parameters']
+        self.price = dictionary['price']['value'] if 'price' in dictionary and 'value' in dictionary['price'] else None
+        self.sellerName = dictionary['seller']['name'] if 'seller' in dictionary else None
+        self.location = dictionary['location']
+        self.phoneNumber = dictionary['phoneNumber']
+        self.gender = dictionary['gender'] if 'gender' in dictionary else None
+        self.uuid = dictionary['uuid']
+
+
+
 
 class DetailedItem(Item):
     id = Field()
