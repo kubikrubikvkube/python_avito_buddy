@@ -1,4 +1,5 @@
-from db_queries import estate_ekb_near_point
+from csv_generator import CsvGenerator
+from db_queries import examples
 from locations import LocationManager
 from mongodb import MongoDB
 
@@ -10,48 +11,15 @@ if __name__ == '__main__':
     filter = {
         "$and": [
             {
-                "userType": "private"
+                "$text": {
+                    "$search": "спортивное"
+                }
             },
             {
-                "location": {
-                    "$geoWithin": {
-                        "$geometry": {
-                            "type": "Polygon",
-                            "coordinates": [
-                                [
-                                    [
-                                        30.454874,
-                                        59.9303772
-                                    ],
-                                    [
-                                        30.4600239,
-                                        59.934183
-                                    ],
-                                    [
-                                        30.4735851,
-                                        59.9317318
-                                    ],
-                                    [
-                                        30.4717398,
-                                        59.9260333
-                                    ],
-                                    [
-                                        30.4560757,
-                                        59.9297966
-                                    ],
-                                    [
-                                        30.454874,
-                                        59.9303772
-                                    ],
-
-                                ]
-                            ]
-                        }
-                    }
-                }
+                "userType": "private"
             }
         ]
     }
-
-    unique_results = mongoDB.find(estate_ekb_near_point, True)
-    print(f"Unique ads {len(unique_results)}")
+    distinct_r = mongoDB.find(filter=examples.vasilievskiy_ostrov)
+    print(f"Unique ads {len(distinct_r)}")
+    CsvGenerator.write_into_csv_file(distinct_r, "result.txt", ["uuid", "phoneNumber", "sellerName", "gender"])
