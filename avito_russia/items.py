@@ -35,7 +35,7 @@ class MongoDetailedItem():
         self.title = dictionary['title']
         self.userType = dictionary['userType'] if 'userType' in dictionary else None
         self.timestamp = dictionary['time']
-        self.description = dictionary['description']
+        self.description = dictionary['description'] if 'description' in dictionary else None
         self.parameters = dictionary['parameters']
         self.price = dictionary['price']['value'] if 'price' in dictionary and 'value' in dictionary['price'] else None
         self.sellerName = dictionary['seller']['name'] if 'seller' in dictionary else None
@@ -90,6 +90,8 @@ class DetailedItem(Item):
     autoCatalogAction = Field()
     geoReferences = Field()
     refs = Field()
+    needToCheckSimilarItems = Field()
+    vehicleType = Field()
 
     @staticmethod
     def resolve_item_value(document: JSONObject) -> JSONObject:
