@@ -1,7 +1,8 @@
-from csv_generator import CsvGenerator
-from db_queries import examples
+from db_queries.geo import vasilievskiy_ostrov
+from db_queries.people import males, persons
 from locations import LocationManager
 from mongodb import MongoDB
+
 
 if __name__ == '__main__':
     location_name = "SAINT-PETERSBURG"
@@ -10,16 +11,14 @@ if __name__ == '__main__':
 
     filter = {
         "$and": [
-            {
-                "$text": {
-                    "$search": "спортивное"
-                }
-            },
-            {
-                "userType": "private"
-            }
+            vasilievskiy_ostrov,
+            males,
+            persons
         ]
+
     }
-    distinct_r = mongoDB.find(filter=examples.vasilievskiy_ostrov)
+
+    distinct_r = mongoDB.find(filter=filter)
     print(f"Unique ads {len(distinct_r)}")
-    CsvGenerator.write_into_csv_file(distinct_r, "result.txt", ["uuid", "phoneNumber", "sellerName", "gender"])
+    name = "himki"
+    # CsvGenerator.write_into_csv_file(distinct_r, f"{name}_{len(distinct_r)}.txt", ["phoneNumber"])
