@@ -106,7 +106,7 @@ class DetailedItemSaverPipeline:
                 processed_item['description'] = raw_item['description']
 
             # 19. Preserve userType
-            processed_item['userType'] = raw_item['userType']
+            processed_item['userType'] = raw_item['userType'] if 'userType' in raw_item else None
 
             # 20. Resolve UUID
             processed_item['uuid'] = str(uuid.uuid4())

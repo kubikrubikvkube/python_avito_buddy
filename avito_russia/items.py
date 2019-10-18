@@ -43,6 +43,7 @@ class MongoDetailedItem():
         self.phoneNumber = dictionary['phoneNumber']
         self.gender = dictionary['gender'] if 'gender' in dictionary else None
         self.uuid = dictionary['uuid']
+        self.sharing = dictionary['sharing'] if 'sharing' in dictionary else None
 
 
 

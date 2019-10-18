@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import json
+import logging
 from datetime import datetime, timedelta
 from json.decoder import JSONObject
 
@@ -43,7 +44,7 @@ class DetailedItemsSpider(AvitoSpider):
         self.start_urls = [self.next_url()]
         self.proxy = ProxyProvider.provide()
         super().__init__(name=self.name)
-        self.logger.info(f"DetailedItemsSpider initialized")
+        self.log(f"DetailedItemsSpider initialized", level=logging.INFO)
 
     def next_url(self) -> str:
         if not self.document_ids_ready_for_processing:
@@ -145,6 +146,10 @@ class RecentSpider(AvitoSpider):
     def parse(self, response):
         json_response = json.loads(response.body_as_unicode())
         assert json_response is not None
+
+        if 'ok' not in json_response['status']:
+            self.log(f"Broken response {json_response}", level=logging.ERROR)
+
         assert json_response['status'] == 'ok'
         items = json_response['result']['items']
 
